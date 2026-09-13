@@ -1,11 +1,12 @@
 import UserIcon from "../components/icons/UserIcon";
 
-export default function NavBar({ marca = "", acciones = [], enlaces = [] }) {
+export default function NavBar({ marca,logo,acciones,enlaces}) {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg bg-light fixed-top shadow-sm">
       <div className="container">
-        <a className="navbar-brand fw-bold" href="/">
-          {marca}
+        <a className="navbar-brand d-flex align-items-center gap-1" href="/">
+          {logo && <img src={logo} alt={marca} height="36" className="d-inline-block align-text-top" />}
+          <span>{marca}</span>
         </a>
 
         <button
@@ -30,13 +31,13 @@ export default function NavBar({ marca = "", acciones = [], enlaces = [] }) {
               </li>
             ))}
           </ul>
-          
+
           <div className="d-flex flex-column flex-lg-row gap-2">
             {acciones.map((accion, index) => (
               <a
                 key={index}
                 href={accion.url}
-                className={accion.className || "btn btn-outline-light"}
+                className={accion.className || "btn btn-outline-dark"}
                 title={accion.title}
                 aria-label={accion.ariaLabel}
               >

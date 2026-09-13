@@ -1,4 +1,4 @@
-import reactLogo from "./assets/react.svg";
+import logoDark from "../public/logoDark.png";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavBar from "./shared/layout/Navbar";
@@ -15,12 +15,12 @@ export default function MyApp() {
     { 
       text: "Tasar mi propiedad", 
       url: "#contacto", 
-      className: "btn btn-outline-light" 
+      className: "btn btn-outline-dark" 
     },
     { 
       text: "Ver propiedades", 
       url: "#propiedades", 
-      className: "btn btn-primary" 
+      className: "btn btn-warning" 
     },
     { 
       text: "", 
@@ -36,6 +36,7 @@ export default function MyApp() {
     <div>
       <NavBar 
         marca="Negocios Inmobiliarios" 
+        logo={logoDark}
         enlaces={enlaces} 
         acciones={acciones} 
       />
