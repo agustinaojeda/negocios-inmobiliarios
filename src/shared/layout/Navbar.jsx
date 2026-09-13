@@ -22,7 +22,7 @@ export default function NavBar({ marca,logo,acciones,enlaces}) {
         </button>
 
         <div className="collapse navbar-collapse" id="menuNavegacion">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+          <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
             {enlaces.map((enlace, index) => (
               <li className="nav-item" key={index}>
                 <a className="nav-link" href={enlace.url}>

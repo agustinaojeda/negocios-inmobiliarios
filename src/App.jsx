@@ -1,4 +1,4 @@
-import logoDark from "../public/logoDark.png";
+import logoDark from "/logoDark.png";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavBar from "./shared/layout/Navbar";
