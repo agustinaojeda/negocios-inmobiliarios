@@ -3,12 +3,14 @@
 //categoria = casa - departamento - ph
 import { capitalizar } from "../../../shared/utils/formato";
 
-export default function FiltroPills({titulo, opciones, seleccionado, onSeleccionar}) {
+export default function FiltroPills({ titulo, opciones = [], seleccionado, onSeleccionar }) {
+  const opcionesSinTodas = opciones.filter((opcion) => opcion !== 'todas')
+
   return (
     <div className="mb-4">
       <span className="form-label fw-bold d-block mb-2">{titulo}</span>
       <div className="d-flex flex-wrap gap-2">
-        {/*boton para seleccionar todas*/}
+        {/*boton para seleccionar todas */}
         <button
           type="button"
           className={`btn btn-sm rounded-pill ${
@@ -20,7 +22,7 @@ export default function FiltroPills({titulo, opciones, seleccionado, onSeleccion
         </button>
 
         {/*demas botones con las otras opciones (venta - alquiler o casa - depto - ph)*/}
-        {opciones.map((opcion) => {
+        {opcionesSinTodas.map((opcion) => {
           const activo = opcion === seleccionado
           return (
             <button
@@ -37,5 +39,5 @@ export default function FiltroPills({titulo, opciones, seleccionado, onSeleccion
         })}
       </div>
     </div>
-  );
+  )
 }
