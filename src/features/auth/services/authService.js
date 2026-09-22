@@ -1,7 +1,7 @@
 import { redirect } from 'react-router'
 
 const URL_BASE = '/backend/data'
-const CLAVE_SESION = 'indumentaria-sur:sesion'
+const CLAVE_SESION = 'negocios-inmobiliarios:sesion'
 
 // ATENCIÓN: esto es SOLO para practicar. En un sistema real las contraseñas
 // jamás se descargan ni se comparan en el navegador: lo resuelve el servidor.
