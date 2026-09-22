@@ -10,6 +10,7 @@ import PropietarioPage from './features/propietario/pages/PropietarioPage'
 import InquilinoPage from './features/inquilino/pages/InquilinoPage'
 import AdminPage from './features/admin/pages/AdminPage'
 import InmueblesPage from './features/inmuebles/pages/InmueblesPage'
+import ContactoPage from './features/contacto/pages/ContactoPage'
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
         loader: redirigirSiHaySesion,
         hydrateFallbackElement: <Spinner />,
       },
+      { path: 'contacto', element: <ContactoPage /> },
       { path: 'inmuebles', element: <InmueblesPage /> },
       { path: 'propietario', element: <PropietarioPage />, loader: protegerRuta },
       { path: 'inquilino', element: <InquilinoPage />, loader: protegerRuta },
