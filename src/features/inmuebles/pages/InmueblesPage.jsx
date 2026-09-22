@@ -8,6 +8,7 @@ import { useFetch } from "../../../shared/hooks/useFetch";
 import Boton from "../../../shared/components/Boton";
 import Spinner from "../../../shared/components/Spinner";
 import MensajeVacio from "../../../shared/components/MensajeVacio";
+import heroImg from "../../../assets/hero.jpg";
 
 function InmueblesPage() {
   const {
@@ -27,15 +28,14 @@ function InmueblesPage() {
       />
     );
 
-  const imagenFondo =
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop";
+  const imagenFondo = heroImg;
 
   return (
     <>
       <header
         className="hero-header mb-5 p-4 p-md-5 text-white rounded-4 shadow position-relative overflow-hidden text-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.70), rgba(0, 0, 0, 0.70)), url("${imagenFondo}")`,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.50)), url("${imagenFondo}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: "360px",
