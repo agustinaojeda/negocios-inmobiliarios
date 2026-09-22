@@ -1,5 +1,5 @@
 //busca las propiedades a la bd o json en este caso, es el unico que puede hacer fetch
-const URL_BASE = '/backend/data/propiedades'
+const URL_BASE = '/backend/data'
 
 export async function obtenerPropiedades() { //devuelve todas
   const respuesta = await fetch(`${URL_BASE}/propiedades.json`)

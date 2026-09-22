@@ -6,7 +6,7 @@ function FiltroZonas({ zonas, seleccionada, onSeleccionar }) {
       </label>
       <select
         id="filtro-zona"
-        className="form-select form-select-sm"
+        className="form-select px-3 form-select-sm rounded-3"
         value={seleccionada}
         onChange={(e) => onSeleccionar(e.target.value)}
       >

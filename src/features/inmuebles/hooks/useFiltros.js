@@ -19,8 +19,8 @@ export function useFiltros(propiedades){
       (categoria === 'todas' || p.categoria === categoria) &&
       (tipo === 'todas' || p.tipo === tipo) && 
       (zona === 'todas' || p.zona === zona) &&
-      (p.nombre.toLowerCase().includes(textoBuscado) ||
-      p.direccion.toLowerCase().includes(textoBuscado)),
+      (p.titulo.toLowerCase().includes(textoBuscado) ||
+      p.zona.toLowerCase().includes(textoBuscado)),
     );
 
     const hayFiltrosActivos = categoria !== 'todas' || tipo !== 'todas' || zona !== 'todas' || textoBuscado !== '';
