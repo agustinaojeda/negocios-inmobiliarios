@@ -1,6 +1,6 @@
 import { redirect } from 'react-router'
 
-const URL_BASE = '/backend/data'
+const URL_BASE = 'data'
 const CLAVE_SESION = 'negocios-inmobiliarios:sesion'
 const CLAVE_USUARIOS_REGISTRADOS = 'negocios-inmobiliarios:usuarios_registrados'
 
