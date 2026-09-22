@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, NavLink } from "react-router";
 import UserIcon from "../components/icons/UserIcon";
 import "./Navbar.css";
 
@@ -39,7 +40,7 @@ export default function Navbar({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Enlace de navegación activo al hacer scroll (solo aplica si la página
+  // Enlace de navegación activo al hacer scroll dentro de la pagina actual (#)(solo aplica si la página
   // tiene <section id="..."> visibles, como la Home)
   useEffect(() => {
     const sections = document.querySelectorAll("section[id]");
@@ -60,11 +61,12 @@ export default function Navbar({
     return () => observer.disconnect();
   }, []);
 
+
+  const esAncla = (url) => url?.startsWith("#");
   const closeMobileNav = () => setMobileOpen(false);
 
   // Desplazamiento suave para enlaces ancla (#seccion) + cierre del menú móvil
-  const handleLinkClick = (event, url) => {
-    if (url.startsWith("#")) {
+  const handleAnchorClick = (event, url) => {
       const target = document.querySelector(url);
       if (target) {
         event.preventDefault();
@@ -72,55 +74,94 @@ export default function Navbar({
         const top = target.getBoundingClientRect().top + window.scrollY - offset;
         window.scrollTo({ top, behavior: "smooth" });
       }
-    }
     closeMobileNav();
   };
 
-  const navbarClases = ["navbar", scrolled && "scrolled", mobileOpen && "nav-open"]
+    const navbarClases = ["navbar", scrolled && "scrolled", mobileOpen && "nav-open"]
     .filter(Boolean)
     .join(" ");
+
+  // Un link del menú: <a> si es ancla, <NavLink> si es ruta real.
+  const renderEnlace = (enlace, onNavigate) =>
+    esAncla(enlace.url) ? (
+      <a
+        key={enlace.id}
+        href={enlace.url}
+        id={enlace.id}
+        className={`nav-link${activeHref === enlace.url ? " active" : ""}`}
+        onClick={(e) => handleAnchorClick(e, enlace.url)}
+      >
+        {enlace.text}
+      </a>
+    ) : (
+      <NavLink
+        key={enlace.id}
+        to={enlace.url}
+        id={enlace.id}
+        end={enlace.url === "/"}
+        className="nav-link"
+        onClick={onNavigate}
+      >
+        {enlace.text}
+      </NavLink>
+    );
+
+  // Un botón de acción: <a> si es ancla, <Link> si es ruta real.
+  const renderAccion = (accion, onNavigate) => {
+    const contenido = (
+      <>
+        {accion.icon && <UserIcon />}
+        {accion.text}
+      </>
+    );
+    const clave = accion.id ?? accion.text;
+
+    return esAncla(accion.url) ? (
+      <a
+        key={clave}
+        href={accion.url}
+        id={accion.id}
+        className={accion.className || "nav-cta"}
+        style={accion.style}
+        aria-label={accion.ariaLabel}
+        title={accion.title}
+        onClick={(e) => handleAnchorClick(e, accion.url)}
+      >
+        {contenido}
+      </a>
+    ) : (
+      <Link
+        key={clave}
+        to={accion.url}
+        id={accion.id}
+        className={accion.className || "nav-cta"}
+        style={accion.style}
+        aria-label={accion.ariaLabel}
+        title={accion.title}
+        onClick={onNavigate}
+      >
+        {contenido}
+      </Link>
+    );
+  };
 
   return (
     <header>
       {/* Barra de navegación (desktop) */}
       <nav id="navbar" className={navbarClases} aria-label="Navegación principal">
-        <a href="/" className="nav-logo" aria-label={`${marca} - Inicio`}>
+        <Link to="/" className="nav-logo" aria-label={`${marca} - Inicio`}>
           <img src={logoLight} alt={marca} className="logo-light" />
           <img src={logoDark} alt={marca} className="logo-dark" />
           <span className="logo-text">{marca}</span>
-        </a>
+        </Link>
 
         <ul className="nav-menu">
           {enlaces.map((enlace) => (
-            <li key={enlace.id}>
-              <a
-                href={enlace.url}
-                id={enlace.id}
-                className={`nav-link${activeHref === enlace.url ? " active" : ""}`}
-                onClick={(e) => handleLinkClick(e, enlace.url)}
-              >
-                {enlace.text}
-              </a>
-            </li>
+            <li key={enlace.id}>{renderEnlace(enlace)}</li>
           ))}
         </ul>
 
-        <div className="nav-actions">
-          {acciones.map((accion) => (
-            <a
-              key={accion.id ?? accion.text}
-              href={accion.url}
-              id={accion.id}
-              className={accion.className || "nav-cta"}
-              aria-label={accion.ariaLabel}
-              title={accion.title}
-              onClick={(e) => handleLinkClick(e, accion.url)}
-            >
-              {accion.icon && <UserIcon />}
-              {accion.text}
-            </a>
-          ))}
-        </div>
+        <div className="nav-actions">{acciones.map((accion) => renderAccion(accion))}</div>
 
         <button
           className={`hamburger${mobileOpen ? " open" : ""}`}
@@ -138,32 +179,10 @@ export default function Navbar({
 
       {/* Navegación móvil */}
       <nav id="mobileNav" className={`mobile-nav${mobileOpen ? " open" : ""}`} aria-label="Menú móvil">
-        {enlaces.map((enlace) => (
-          <a
-            key={enlace.id}
-            href={enlace.url}
-            className="nav-link"
-            onClick={(e) => handleLinkClick(e, enlace.url)}
-          >
-            {enlace.text}
-          </a>
-        ))}
+        {enlaces.map((enlace) => renderEnlace(enlace, closeMobileNav))}
 
         <div className="mobile-nav-actions" style={{ flexDirection: "column", gap: "0.5rem" }}>
-          {botonesMobile.map((accion) => (
-            <a
-              key={accion.id ?? accion.text}
-              href={accion.url}
-              className={accion.className || "nav-cta"}
-              style={accion.style}
-              aria-label={accion.ariaLabel}
-              title={accion.title}
-              onClick={(e) => handleLinkClick(e, accion.url)}
-            >
-              {accion.icon && <UserIcon />}
-              {accion.text}
-            </a>
-          ))}
+          {botonesMobile.map((accion) => renderAccion(accion, closeMobileNav))}
         </div>
       </nav>
     </header>
