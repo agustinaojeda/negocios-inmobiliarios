@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import LayoutPublico from './shared/layout/LayoutPublico'
 import HomePage from './features/home/pages/HomePage'
 import LoginPage from './features/auth/pages/LoginPage'
+import RegistroPage from './features/auth/pages/RegistroPage'
 import NoEncontradaPage from './shared/pages/NoEncontradaPage'
 import Spinner from './shared/components/Spinner'
 import { redirigirSiHaySesion, protegerRuta } from './features/auth/services/authService'
@@ -20,6 +21,12 @@ export const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />,
+        loader: redirigirSiHaySesion,
+        hydrateFallbackElement: <Spinner />,
+      },
+      {
+        path: 'registro',
+        element: <RegistroPage />,
         loader: redirigirSiHaySesion,
         hydrateFallbackElement: <Spinner />,
       },
