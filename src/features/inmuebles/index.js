@@ -1,0 +1,1 @@
+export { obtenerPropiedades } from './services/inmueblesService'

@@ -1,4 +1,6 @@
 import { useOutletContext } from 'react-router'
+import GestionUsuarios from '../components/GestionUsuarios'
+import GestionInmuebles from '../components/GestionInmuebles'
 
 export default function AdminPage() {
   const { seccionActiva, sesion } = useOutletContext()
@@ -36,32 +38,9 @@ export default function AdminPage() {
         </div>
       )}
 
-      {seccionActiva === 'usuarios' && (
-        <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2 className="h5 fw-bold mb-0" style={{ color: '#13284c' }}>
-              Gestión de Usuarios y Roles
-            </h2>
-            <button className="btn btn-sm btn-primary rounded-pill px-3 fw-medium">
-              + Nuevo Usuario
-            </button>
-          </div>
-          <p className="text-muted">
-            Administración de cuentas para administradores, agentes, propietarios e inquilinos.
-          </p>
-        </div>
-      )}
+      {seccionActiva === 'usuarios' && (<GestionUsuarios />)}
 
-      {seccionActiva === 'inmuebles' && (
-        <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <h2 className="h5 fw-bold mb-3" style={{ color: '#13284c' }}>
-            Catálogo Global de Inmuebles
-          </h2>
-          <p className="text-muted">
-            Supervisión, aprobación y moderación de publicaciones en el portal.
-          </p>
-        </div>
-      )}
+      {seccionActiva === 'inmuebles' && (<GestionInmuebles />)}
 
       {seccionActiva === 'contratos' && (
         <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
@@ -74,16 +53,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {seccionActiva === 'reportes' && (
-        <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <h2 className="h5 fw-bold mb-3" style={{ color: '#13284c' }}>
-            Reportes y Estadísticas
-          </h2>
-          <p className="text-muted">
-            Métricas de conversión, facturación de comisiones y rendimiento por agente.
-          </p>
-        </div>
-      )}
 
       {seccionActiva === 'configuracion' && (
         <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">

@@ -308,18 +308,7 @@ export const MENUS_POR_ROL = {
                 <polyline points="10 9 9 9 8 9" />
               </svg>
             ),
-          },
-          {
-            id: 'reportes',
-            label: 'Reportes y Métricas',
-            icon: (color) => (
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke={color} strokeWidth="1.8" viewBox="0 0 24 24">
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-            ),
-          },
+          }
         ],
       },
     ],

@@ -1,0 +1,1 @@
+export { obtenerTodosLosUsuarios, registrarUsuario } from "./services/authService";
