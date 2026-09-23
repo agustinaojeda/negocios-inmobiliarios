@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import './Buscador.css';
+import { useOutletContext } from 'react-router';
 
 export default function Buscador() {
   const [location, setLocation] = useState('');
   const [tipo, setTipo] = useState('');
   const [operacion, setOperacion] = useState('');
+  
+  const { mostrarToast } = useOutletContext();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -14,8 +17,7 @@ export default function Buscador() {
       operacion 
     });
     
-    // Simulación del toast original
-    alert(`Buscando propiedades${location.trim() ? ' en ' + location.trim() : ''}…`);
+    mostrarToast(`Buscando propiedades${location.trim() ? ' en ' + location.trim() : ''}…`);
   };
 
   return (

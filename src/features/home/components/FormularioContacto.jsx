@@ -194,7 +194,7 @@ export default function FormularioContacto() {
         </div>
 
         <button type="submit" className="btn-primary" disabled={enviado}>
-          {enviado ? "✅ ¡Consulta enviada!" : "Enviar Consulta"}
+          {enviado ? " ¡Consulta enviada!" : "Enviar Consulta"}
         </button>
       </form>
     </div>
