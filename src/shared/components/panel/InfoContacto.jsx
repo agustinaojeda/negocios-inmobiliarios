@@ -3,8 +3,8 @@ import FormInput from "./FormInput";
 import {
   obtenerSesion,
   actualizarSesion,
-} from "../../auth/services/authService";
-import { esRequerido, esEmailValido, esTelefonoValido } from "../../../shared/utils/validaciones";
+} from "../../../features/auth/services/authService";
+import { esRequerido, esEmailValido, esTelefonoValido } from "../../utils/validaciones";
 
 function validar(valores) {
   const errores = {};

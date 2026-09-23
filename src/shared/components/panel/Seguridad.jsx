@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import FormInput from "./FormInput";
-import { cambiarPassword } from "../../auth/services/authService";
-import { esRequerido } from "../../../shared/utils/validaciones";
+import { cambiarPassword } from "../../../features/auth/services/authService";
+import { esRequerido } from "../../utils/validaciones";
 
 function validar(valores) {
   const errores = {};
