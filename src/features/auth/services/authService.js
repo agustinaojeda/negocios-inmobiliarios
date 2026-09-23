@@ -175,3 +175,38 @@ export function redirigirSiHaySesion() {
   return null
 }
 
+export async function cambiarPassword(passwordActual, passwordNueva) {
+  const sesion = obtenerSesion();
+  if (!sesion) {
+    throw new Error('No hay una sesión activa.');
+  }
+
+  //obtenemos todos los usuarios
+  const usuarios = await obtenerTodosLosUsuarios();
+  const usuarioEncontrado = usuarios.find(
+    (u) => u.email.toLowerCase() === sesion.email.toLowerCase()
+  );
+
+  //verificar que la contra que puso es la que tiene
+  if (!usuarioEncontrado || usuarioEncontrado.password !== passwordActual) {
+    throw new Error('La contraseña actual es incorrecta.');
+  }
+
+  //actualizar cambios
+  const registrados = obtenerUsuariosRegistradosLocal();
+  const indice = registrados.findIndex(
+    (u) => u.email.toLowerCase() === sesion.email.toLowerCase()
+  );
+
+  if (indice !== -1) {
+    registrados[indice].password = passwordNueva;
+  } else {
+    registrados.push({
+      ...usuarioEncontrado,
+      password: passwordNueva,
+    });
+  }
+
+  localStorage.setItem(CLAVE_USUARIOS_REGISTRADOS, JSON.stringify(registrados));
+  return true;
+}

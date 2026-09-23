@@ -6,7 +6,7 @@
     "zona": "Palermo",
     "precio": 280000,
     "unit": "",
-    "categoria" : "casa",
+    "categoria": "casa",
     "tipo": "venta",
     "estado": "disponible",
     "amb": 4,
@@ -14,7 +14,9 @@
     "m2": 320,
     "img": "/img/propiedades/prop1.jpg",
     "desc": "Casa moderna de autor con vistas panorámicas al río en Nordelta.",
-    "agenteId": 1
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": null
   },
   {
     "id": 2,
@@ -23,7 +25,7 @@
     "zona": "Palermo",
     "precio": 1800,
     "unit": "/mes",
-    "categoria" : "departamento",
+    "categoria": "departamento",
     "tipo": "alquiler",
     "estado": "disponible",
     "amb": 3,
@@ -31,7 +33,9 @@
     "m2": 120,
     "img": "/img/propiedades/prop2.jpg",
     "desc": "Departamento luminoso con terraza privada y vistas al parque.",
-    "agenteId": 2
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": null
   },
   {
     "id": 3,
@@ -40,7 +44,7 @@
     "zona": "Tigre",
     "precio": 195000,
     "unit": "",
-    "categoria" : "casa",
+    "categoria": "casa",
     "tipo": "venta",
     "estado": "reservado",
     "amb": 5,
@@ -48,7 +52,9 @@
     "m2": 480,
     "img": "/img/propiedades/prop3.jpg",
     "desc": "Casa familiar con jardín paisajístico y pileta climatizada en country.",
-    "agenteId": 3
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": "usr-3"
   },
   {
     "id": 4,
@@ -57,7 +63,7 @@
     "zona": "Puerto Madero",
     "precio": 520000,
     "unit": "",
-    "categoria" : "ph",
+    "categoria": "ph",
     "tipo": "venta",
     "estado": "disponible",
     "amb": 5,
@@ -65,7 +71,9 @@
     "m2": 290,
     "img": "/img/propiedades/prop4.jpg",
     "desc": "PH exclusivo con terraza privada y vista 360° al skyline porteño.",
-    "agenteId": 1
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": null
   },
   {
     "id": 5,
@@ -74,7 +82,7 @@
     "zona": "Belgrano",
     "precio": 520000,
     "unit": "",
-    "categoria" : "casa",
+    "categoria": "casa",
     "tipo": "venta",
     "estado": "disponible",
     "amb": 5,
@@ -82,7 +90,8 @@
     "m2": 480,
     "img": "/img/propiedades/prop5.jpg",
     "desc": "Residencia premium con piscina infinita y jardín paisajístico.",
-    "agenteId": 1
+    "agenteId": "usr-4",
+    "clienteId": null
   },
   {
     "id": 6,
@@ -91,15 +100,17 @@
     "zona": "Palermo",
     "precio": 2200,
     "unit": "/mes",
-    "categoria" : "departamento",
+    "categoria": "departamento",
     "tipo": "alquiler",
-    "estado": "vendido",
+    "estado": "alquilado",
     "amb": 2,
     "banos": 1,
     "m2": 65,
     "img": "/img/propiedades/prop6.jpg",
     "desc": "Living moderno reformado en planta baja con patio exclusivo.",
-    "agenteId": 2
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": "usr-3"
   },
   {
     "id": 7,
@@ -108,7 +119,7 @@
     "zona": "Recoleta",
     "precio": 380000,
     "unit": "",
-    "categoria" : "departamento",
+    "categoria": "departamento",
     "tipo": "venta",
     "estado": "reservado",
     "amb": 4,
@@ -116,7 +127,9 @@
     "m2": 210,
     "img": "/img/propiedades/prop7.jpg",
     "desc": "Apartamento de lujo en edificio de categoría con amenities completos.",
-    "agenteId": 3
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": "usr-3"
   },
   {
     "id": 8,
@@ -125,7 +138,7 @@
     "zona": "Nordelta",
     "precio": 145000,
     "unit": "",
-    "categoria" : "casa",
+    "categoria": "casa",
     "tipo": "venta",
     "estado": "disponible",
     "amb": 3,
@@ -133,6 +146,8 @@
     "m2": 180,
     "img": "/img/propiedades/prop8.jpg",
     "desc": "Casa en barrio cerrado con acceso directo al lago y bote propio.",
-    "agenteId": 4
+    "agenteId": "usr-4",
+    "propietarioId": "usr-2",
+    "clienteId": null
   }
 ]

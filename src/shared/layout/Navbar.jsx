@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router";
 import UserIcon from "../components/icons/UserIcon";
+import { obtenerSesion } from "../../features/auth/services/authService"
 import "./Navbar.css";
 
 /**
@@ -30,7 +31,41 @@ export default function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeHref, setActiveHref] = useState(null);
 
-  const botonesMobile = accionesMobile ?? acciones;
+  //estado que lee la sesion activa
+  const [usuario, setUsuario] = useState(() => obtenerSesion());
+
+  useEffect(() => {
+    //escucha si la sesión cambia o se actualiza
+    const manejarCambioSesion = () => setUsuario(obtenerSesion());
+    window.addEventListener("sesionActualizada", manejarCambioSesion);
+    return () => window.removeEventListener("sesionActualizada", manejarCambioSesion);
+  }, []);
+
+  //si hay alguien logeado muestra va al panel
+  const accionesDinamicas = acciones.map((accion) => {
+    if (accion.id === "nav-login" && usuario) {
+      return {
+        ...accion,
+        text: "",
+        url: `/${usuario.rol || "inquilino"}`,
+        title: `Ir a mi panel (${usuario.nombre || "Usuario"})`,
+        ariaLabel: "Ir a mi panel privado",
+      };
+    }
+    return accion;
+  });
+
+  const accionesMobileBase = accionesMobile ?? acciones;
+  const botonesMobile = accionesMobileBase.map((accion) => {
+    if (accion.id === "nav-login-m" && usuario) {
+      return {
+        ...accion,
+        text: `Mi Panel (${usuario.nombre?.split(" ")[0] || "Usuario"})`,
+        url: `/${usuario.rol || "inquilino"}`,
+      };
+    }
+    return accion;
+  });
 
   // Efecto de scroll en la barra de navegación
   useEffect(() => {
@@ -40,8 +75,7 @@ export default function Navbar({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Enlace de navegación activo al hacer scroll dentro de la pagina actual (#)(solo aplica si la página
-  // tiene <section id="..."> visibles, como la Home)
+  // Enlace de navegación activo al hacer scroll dentro de la página actual (#)
   useEffect(() => {
     const sections = document.querySelectorAll("section[id]");
     if (!sections.length) return;
@@ -61,23 +95,22 @@ export default function Navbar({
     return () => observer.disconnect();
   }, []);
 
-
   const esAncla = (url) => url?.startsWith("#");
   const closeMobileNav = () => setMobileOpen(false);
 
-  // Desplazamiento suave para enlaces ancla (#seccion) + cierre del menú móvil
+  // Desplazamiento suave para enlaces ancla (#seccion)
   const handleAnchorClick = (event, url) => {
-      const target = document.querySelector(url);
-      if (target) {
-        event.preventDefault();
-        const offset = 80;
-        const top = target.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
+    const target = document.querySelector(url);
+    if (target) {
+      event.preventDefault();
+      const offset = 80;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
     closeMobileNav();
   };
 
-    const navbarClases = ["navbar", scrolled && "scrolled", mobileOpen && "nav-open"]
+  const navbarClases = ["navbar", scrolled && "scrolled", mobileOpen && "nav-open"]
     .filter(Boolean)
     .join(" ");
 
@@ -161,7 +194,9 @@ export default function Navbar({
           ))}
         </ul>
 
-        <div className="nav-actions">{acciones.map((accion) => renderAccion(accion))}</div>
+        <div className="nav-actions">
+          {accionesDinamicas.map((accion) => renderAccion(accion))}
+        </div>
 
         <button
           className={`hamburger${mobileOpen ? " open" : ""}`}
