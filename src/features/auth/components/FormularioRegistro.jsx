@@ -8,6 +8,7 @@ const VALORES_INICIALES = {
     email: '',
     password: '',
     telefono: '',
+    rol: 'inquilino',
 }
 
 function validar(valores) {
@@ -28,7 +29,11 @@ function validar(valores) {
     return errores
 }
 
-export default function FormularioRegistro({ onRegistroExitoso }) {
+export default function FormularioRegistro({
+    onRegistroExitoso,
+    mostrarSelectorRol = false,
+    textoBoton = 'Crear mi cuenta',
+}) {
     const [valores, setValores] = useState(VALORES_INICIALES)
     const [errores, setErrores] = useState({})
     const [enviando, setEnviando] = useState(false)
@@ -60,13 +65,12 @@ export default function FormularioRegistro({ onRegistroExitoso }) {
 
         setEnviando(true)
         try {
-            // El rol se fija en 'inquilino' por defecto
             await onRegistroExitoso({
                 ...valores,
                 nombre: valores.nombre.trim(),
                 email: valores.email.trim(),
                 telefono: valores.telefono.trim(),
-                rol: 'inquilino',
+                rol: valores.rol,
             })
         } catch (err) {
             setErrores({ global: err.message || 'Error al registrar el usuario' })
@@ -146,7 +150,7 @@ export default function FormularioRegistro({ onRegistroExitoso }) {
                 </div>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-3">
                 <label htmlFor="telefono" className="form-label">
                     Teléfono de contacto <small className="text-secondary">(opcional)</small>
                 </label>
@@ -163,8 +167,29 @@ export default function FormularioRegistro({ onRegistroExitoso }) {
                 />
             </div>
 
+            {mostrarSelectorRol && (
+                <div className="mb-4">
+                    <label htmlFor="rol" className="form-label">
+                        Rol asignado
+                    </label>
+                    <select
+                        id="rol"
+                        name="rol"
+                        className="form-select"
+                        value={valores.rol}
+                        onChange={handleChange}
+                        disabled={enviando}
+                    >
+                        <option value="inquilino">Inquilino (Cliente)</option>
+                        <option value="propietario">Propietario</option>
+                        <option value="agente">Agente Inmobiliario</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+            )}
+
             <Boton type="submit" variante="dark" className="w-100" disabled={enviando}>
-                {enviando ? 'Creando cuenta...' : 'Crear mi cuenta'}
+                {enviando ? 'Guardando...' : textoBoton}
             </Boton>
         </form>
     )
