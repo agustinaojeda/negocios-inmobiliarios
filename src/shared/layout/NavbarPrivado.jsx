@@ -1,8 +1,27 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import logoDark from '/logoDark.png'
 import UserIcon from '../components/icons/UserIcon'
+import { obtenerSesion } from '../../features/auth/services/authService'
 
 export default function NavbarPrivado({ sesion }) {
+  const [usuario, setUsuario] = useState(sesion || obtenerSesion())
+
+  useEffect(() => {
+    setUsuario(sesion || obtenerSesion())
+
+    //escucha si se actualiza los datos de la sesion
+    const manejarCambioSesion = () => {
+      setUsuario(obtenerSesion())
+    }
+
+    window.addEventListener('sesionActualizada', manejarCambioSesion)
+
+    return () => {
+      window.removeEventListener('sesionActualizada', manejarCambioSesion)
+    }
+  }, [sesion])
+
   const formatearRol = (rol) => {
     switch (rol) {
       case 'admin':
@@ -32,7 +51,7 @@ export default function NavbarPrivado({ sesion }) {
     }
   }
 
-  const badgeEstilo = obtenerColorBadge(sesion?.rol)
+  const badgeEstilo = obtenerColorBadge(usuario?.rol)
 
   return (
     <header className="bg-white border-bottom shadow-sm sticky-top" style={{ height: '72px', zIndex: 1000 }}>
@@ -40,7 +59,7 @@ export default function NavbarPrivado({ sesion }) {
 
         {/* Logo de la empresa */}
         <Link
-          to={`/${sesion?.rol || 'inquilino'}`}
+          to={`/${usuario?.rol || 'inquilino'}`}
           className="d-flex align-items-center gap-2 text-decoration-none"
           title="Ir al inicio de mi panel"
         >
@@ -82,20 +101,36 @@ export default function NavbarPrivado({ sesion }) {
 
           {/* Badge del Usuario y Rol */}
           <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-light border">
+            {/* Contenedor del Avatar / Foto */}
             <div
-              className="d-flex align-items-center justify-content-center rounded-circle"
+              className="d-flex align-items-center justify-content-center rounded-circle overflow-hidden"
               style={{
                 width: '32px',
                 height: '32px',
                 backgroundColor: badgeEstilo.bg,
                 color: badgeEstilo.text,
+                flexShrink: 0
               }}
             >
-              <UserIcon />
+              {usuario?.fotoPerfil ? (
+                <img
+                  src={usuario.fotoPerfil}
+                  alt={usuario?.nombre || 'Foto de perfil'}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center'
+                  }}
+                />
+              ) : (
+                <UserIcon />
+              )}
             </div>
+
             <div className="d-flex flex-column text-start">
               <span className="fw-bold small" style={{ color: '#13284c', lineHeight: 1.2 }}>
-                {sesion?.nombre || 'Usuario'}
+                {usuario?.nombre || 'Usuario'}
               </span>
               <span
                 className="badge rounded-pill px-2 py-0 align-self-start"
@@ -106,12 +141,10 @@ export default function NavbarPrivado({ sesion }) {
                   fontSize: '0.62rem',
                 }}
               >
-                {formatearRol(sesion?.rol)}
+                {formatearRol(usuario?.rol)}
               </span>
             </div>
           </div>
-
-
 
         </div>
 

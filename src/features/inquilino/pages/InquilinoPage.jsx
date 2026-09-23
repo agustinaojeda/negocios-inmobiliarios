@@ -1,24 +1,12 @@
 import { useOutletContext } from 'react-router'
+import InformacionContacto from '../components/InfoContacto'
 
 export default function InquilinoPage() {
   const { seccionActiva, sesion } = useOutletContext()
 
   return (
     <div>
-      {seccionActiva === 'contacto' && (
-        <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <h2 className="h5 fw-bold mb-3" style={{ color: '#13284c' }}>
-            Información de Contacto
-          </h2>
-          <p className="text-muted">
-            Gestiona tus datos personales y medios de contacto.
-          </p>
-          <div className="mt-3 p-3 rounded-3" style={{ backgroundColor: '#f8fafc' }}>
-            <p className="mb-1"><strong>Nombre:</strong> {sesion?.nombre || 'Inquilino'}</p>
-            <p className="mb-1"><strong>Email:</strong> {sesion?.email || 'inquilino@ejemplo.com'}</p>
-            <p className="mb-0"><strong>Rol:</strong> Inquilino</p>
-          </div>
-        </div>
+      {seccionActiva === 'contacto' && (<InformacionContacto />
       )}
 
       {seccionActiva === 'favoritos' && (

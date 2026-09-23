@@ -12,7 +12,7 @@ function obtenerUsuariosRegistradosLocal() {
   }
 }
 
-async function obtenerTodosLosUsuarios() {
+export async function obtenerTodosLosUsuarios() {
   let usuariosBase = []
   try {
     const respuesta = await fetch(`${URL_BASE}/usuarios.json`)
@@ -24,8 +24,18 @@ async function obtenerTodosLosUsuarios() {
   }
 
   const usuariosRegistrados = obtenerUsuariosRegistradosLocal()
-  return [...usuariosBase, ...usuariosRegistrados]
+
+  // Usamos un Map por email para fusionar las dos listas:
+  // Si un usuario de usuarios.json se editó y guardó en localStorage, 
+  // la versión de localStorage SOBRESCRIBE a la vieja del JSON.
+  const mapaUsuarios = new Map()
+
+  usuariosBase.forEach((u) => mapaUsuarios.set(u.email, u))
+  usuariosRegistrados.forEach((u) => mapaUsuarios.set(u.email, u))
+
+  return Array.from(mapaUsuarios.values())
 }
+
 export async function registrarUsuario({ nombre, email, password, telefono, rol = 'inquilino' }) {
   const emailLimpio = email.trim().toLowerCase()
   const usuarios = await obtenerTodosLosUsuarios()
@@ -44,6 +54,7 @@ export async function registrarUsuario({ nombre, email, password, telefono, rol 
     email: emailLimpio,
     password,
     telefono: telefono?.trim() || '',
+    fotoPerfil: `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=13284c&color=fff`,
     rol,
   }
 
@@ -56,6 +67,8 @@ export async function registrarUsuario({ nombre, email, password, telefono, rol 
     id: nuevoUsuario.id,
     nombre: nuevoUsuario.nombre,
     email: nuevoUsuario.email,
+    telefono: nuevoUsuario.telefono,
+    fotoPerfil: nuevoUsuario.fotoPerfil,
     rol: nuevoUsuario.rol,
   }
 }
@@ -75,7 +88,14 @@ export async function iniciarSesion(email, password) {
   }
 
   // Nunca se guarda la contraseña en la sesión.
-  const sesion = { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol }
+  const sesion = { 
+    id: usuario.id, 
+    nombre: usuario.nombre, 
+    email: usuario.email, 
+    telefono: usuario.telefono,
+    fotoPerfil: usuario.fotoPerfil,
+    rol: usuario.rol 
+  }
   sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
   return sesion
 }
@@ -86,6 +106,36 @@ export function obtenerSesion() {
   } catch {
     return null
   }
+}
+
+//actualizar datos del usuario activo
+export function actualizarSesion(datosNuevos) {
+  const sesionActual = obtenerSesion() || {}
+  const sesionActualizada = { ...sesionActual, ...datosNuevos }
+
+  // 1. Guardamos en sessionStorage
+  sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesionActualizada))
+
+  // 2. Guardamos en localStorage
+  try {
+    const registrados = obtenerUsuariosRegistradosLocal()
+    const indice = registrados.findIndex((u) => u.email === sesionActual.email)
+
+    if (indice !== -1) {
+      registrados[indice] = { ...registrados[indice], ...datosNuevos }
+    } else {
+      registrados.push(sesionActualizada)
+    }
+
+    localStorage.setItem(CLAVE_USUARIOS_REGISTRADOS, JSON.stringify(registrados))
+  } catch (error) {
+    console.error('Error al actualizar en localStorage:', error)
+  }
+
+  // Avisamos a toda la app que la sesión se actualizó
+  window.dispatchEvent(new Event('sesionActualizada'))
+
+  return sesionActualizada
 }
 
 export function cerrarSesion() {

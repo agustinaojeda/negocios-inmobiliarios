@@ -5,7 +5,8 @@
     "email": "admin@inmobiliaria.com",
     "password": "admin123",
     "rol": "admin",
-    "telefono": "1144556677"
+    "telefono": "1144556677",
+    "fotoPerfil": "https://ui-avatars.com/api/?name=Admin+Principal&background=13284c&color=fff"
   },
   {
     "id": "usr-2",
@@ -13,7 +14,8 @@
     "email": "propietario@inmobiliaria.com",
     "password": "prop123",
     "rol": "propietario",
-    "telefono": "1155667788"
+    "telefono": "1155667788",
+    "fotoPerfil": "https://ui-avatars.com/api/?name=Carlos+Propietario&background=13284c&color=fff"
   },
   {
     "id": "usr-3",
@@ -21,7 +23,8 @@
     "email": "inquilino@inmobiliaria.com",
     "password": "inq123",
     "rol": "inquilino",
-    "telefono": "1166778899"
+    "telefono": "1166778899",
+    "fotoPerfil": "https://ui-avatars.com/api/?name=Mariana+Inquilina&background=13284c&color=fff"
   },
   {
     "id": "usr-4",
@@ -29,6 +32,7 @@
     "email": "agente@inmobiliaria.com",
     "password": "age123",
     "rol": "agente",
-    "telefono": "1177889900"
+    "telefono": "1177889900",
+    "fotoPerfil": "https://ui-avatars.com/api/?name=Roberto+Agente&background=13284c&color=fff"
   }
 ]
