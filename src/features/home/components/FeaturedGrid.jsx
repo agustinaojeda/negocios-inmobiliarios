@@ -1,107 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropertyCard from './PropertyCard';
-import './FeaturedGrid.css';
-
-// Datos iniciales de prueba
-const initialProperties = [
-  { 
-    id: 1, 
-    operacion: 'venta', 
-    tipo: 'casa', 
-    price: 280000, 
-    priceFormatted: 'USD 280.000', 
-    unit: '', 
-    title: 'Casa Moderna con Vista Panorámica', 
-    location: 'Nordelta, Buenos Aires', 
-    ambientes: 4, 
-    banos: 3, 
-    area: 320, 
-    operacionText: 'Venta', 
-    image: '/img/propiedades/prop1.jpg',
-    delay: 1 
-  },
-  { 
-    id: 2, 
-    operacion: 'alquiler', 
-    tipo: 'departamento', 
-    price: 1800, 
-    priceFormatted: 'USD 1.800', 
-    unit: '/mes', 
-    title: 'Departamento con Terraza y Vista', 
-    location: 'Palermo, CABA', 
-    ambientes: 3, 
-    banos: 2, 
-    area: 120, 
-    operacionText: 'Alquiler', 
-    image: '/img/propiedades/prop2.jpg', 
-    delay: 2 
-  },
-  { 
-    id: 3, 
-    operacion: 'venta', 
-    tipo: 'casa', 
-    price: 195000, 
-    priceFormatted: 'USD 195.000', 
-    unit: '', 
-    title: 'Casa Familiar con Jardín y Pileta', 
-    location: 'Tigre, Buenos Aires', 
-    ambientes: 5, 
-    banos: 3, 
-    area: 480, 
-    operacionText: 'Venta', 
-    image: '/img/propiedades/prop3.jpg', 
-    delay: 3 
-  },
-  { 
-    id: 4, 
-    operacion: 'venta', 
-    tipo: 'ph', 
-    price: 520000, 
-    priceFormatted: 'USD 520.000', 
-    unit: '', 
-    title: 'PH Premium con Vista a Buenos Aires', 
-    location: 'Puerto Madero, CABA', 
-    ambientes: 5, 
-    banos: 4, 
-    area: 290, 
-    operacionText: 'Venta', 
-    image: '/img/propiedades/prop4.jpg', 
-    delay: 1 
-  }
-];
+import { useFiltros } from '../../inmuebles/hooks/useFiltros'; // Ajusta la ruta según tu proyecto
+import './FeaturedGrid.css'; 
 
 export default function FeaturedGrid() {
-  const [properties, setProperties] = useState(initialProperties);
-  const [filter, setFilter] = useState('all');
+  const [propertiesDB, setPropertiesDB] = useState([]);
   const [sort, setSort] = useState('newest');
+  const [activeTab, setActiveTab] = useState('todas');
+  
+  // Nuevo estado para controlar si se muestran todas las propiedades
+  const [mostrarTodas, setMostrarTodas] = useState(false);
   
   const headerRef = useRef(null);
   const controlsRef = useRef(null);
   const btnRef = useRef(null);
 
-  // Lógica de Filtrado y Ordenamiento
   useEffect(() => {
-    let result = [...initialProperties];
+    fetch('/data/propiedades.json')
+      .then(res => res.json())
+      .then(data => setPropertiesDB(data))
+      .catch(err => console.error("Error al cargar propiedades:", err));
+  }, []);
 
-    // Aplicar filtro
-    if (filter !== 'all') {
-      result = result.filter(p => p.operacion === filter || p.tipo === filter);
+  const { 
+    setTipo, 
+    setCategoria, 
+    propiedadesFiltradas,
+    limpiarFiltros 
+  } = useFiltros(propertiesDB);
+
+  const handleFilterClick = (filterValue, filterType) => {
+    setActiveTab(filterValue);
+    limpiarFiltros();
+    
+    // Al cambiar de filtro, volvemos a ocultar las tarjetas extra
+    setMostrarTodas(false);
+
+    if (filterType === 'tipo') {
+      setTipo(filterValue);
+    } else if (filterType === 'categoria') {
+      setCategoria(filterValue);
     }
+  };
 
-    // Aplicar ordenamiento
-    if (sort === 'price-asc') {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price-desc') {
-      result.sort((a, b) => b.price - a.price);
-    } else {
-      // newest (basado en id, mayor a menor)
-      result.sort((a, b) => b.id - a.id);
-    }
+  const sortedProperties = [...propiedadesFiltradas].sort((a, b) => {
+    if (sort === 'price-asc') return a.precio - b.precio;
+    if (sort === 'price-desc') return b.precio - a.precio;
+    return b.id - a.id; 
+  });
 
-    setProperties(result);
-  }, [filter, sort]);
+  // Determinamos cuáles propiedades mostrar según el estado 'mostrarTodas'
+  const propiedadesAMostrar = mostrarTodas 
+    ? sortedProperties 
+    : sortedProperties.slice(0, 4);
 
-  // Animaciones ScrollReveal para los elementos que no son tarjetas
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -126,7 +78,6 @@ export default function FeaturedGrid() {
     <section id="propiedades" aria-labelledby="propiedades-title">
       <div className="container">
         
-        {/* Cabecera */}
         <div ref={headerRef} className="section-header reveal">
           <div>
             <span className="section-tag">Propiedades</span>
@@ -141,14 +92,33 @@ export default function FeaturedGrid() {
           </a>
         </div>
 
-        {/* Controles (Filtros y Orden) */}
         <div ref={controlsRef} className="listings-controls reveal">
           <div className="filter-tabs">
-            <button className={`filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Todas</button>
-            <button className={`filter-tab ${filter === 'venta' ? 'active' : ''}`} onClick={() => setFilter('venta')}>En venta</button>
-            <button className={`filter-tab ${filter === 'alquiler' ? 'active' : ''}`} onClick={() => setFilter('alquiler')}>En alquiler</button>
-            <button className={`filter-tab ${filter === 'casa' ? 'active' : ''}`} onClick={() => setFilter('casa')}>Casas</button>
-            <button className={`filter-tab ${filter === 'departamento' ? 'active' : ''}`} onClick={() => setFilter('departamento')}>Departamentos</button>
+            <button 
+              className={`filter-tab ${activeTab === 'todas' ? 'active' : ''}`} 
+              onClick={() => handleFilterClick('todas', 'todas')}>
+                Todas
+            </button>
+            <button 
+              className={`filter-tab ${activeTab === 'venta' ? 'active' : ''}`} 
+              onClick={() => handleFilterClick('venta', 'tipo')}>
+                En venta
+            </button>
+            <button 
+              className={`filter-tab ${activeTab === 'alquiler' ? 'active' : ''}`} 
+              onClick={() => handleFilterClick('alquiler', 'tipo')}>
+                En alquiler
+            </button>
+            <button 
+              className={`filter-tab ${activeTab === 'casa' ? 'active' : ''}`} 
+              onClick={() => handleFilterClick('casa', 'categoria')}>
+                Casas
+            </button>
+            <button 
+              className={`filter-tab ${activeTab === 'departamento' ? 'active' : ''}`} 
+              onClick={() => handleFilterClick('departamento', 'categoria')}>
+                Departamentos
+            </button>
           </div>
 
           <div className="sort-control">
@@ -161,20 +131,28 @@ export default function FeaturedGrid() {
           </div>
         </div>
 
-        {/* Grilla */}
         <div className="properties-grid">
-          {properties.map((prop) => (
+          {/* Mapeamos el arreglo derivado 'propiedadesAMostrar' */}
+          {propiedadesAMostrar.map((prop) => (
             <PropertyCard key={prop.id} property={prop} />
           ))}
         </div>
 
-        {/* Botón Cargar Más */}
-        <div ref={btnRef} className="load-more-wrap reveal">
-          <button className="btn-load-more" aria-label="Cargar más propiedades">
-            Cargar más propiedades
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
-          </button>
-        </div>
+        {/* Solo mostramos el botón si hay más de 4 propiedades y 'mostrarTodas' es falso */}
+        
+          <div ref={btnRef} className="load-more-wrap reveal">
+            {!mostrarTodas && sortedProperties.length > 4 && (
+            <button 
+              className="btn-load-more" 
+              aria-label="Cargar más propiedades"
+              onClick={() => setMostrarTodas(true)}
+            >
+              Cargar más propiedades
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
+            </button>
+            )}
+          </div>
+        
 
       </div>
     </section>

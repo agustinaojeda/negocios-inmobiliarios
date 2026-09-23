@@ -103,10 +103,27 @@ select {
 }
  
 /* .container: usado por el resto de las secciones (hero, propiedades, etc.)
-   Se deja acá porque es de uso general, no exclusivo del navbar. */
+   Se deja acá porque es de uso general*/
 .container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+ 
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+  color: var(--navy-900);
+  font-size: 0.925rem;
+  font-weight: 700;
+  padding: 0.95rem 2.25rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 16px rgba(201, 168, 76, 0.35);
+}
+ 
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 168, 76, 0.5);
 }
  

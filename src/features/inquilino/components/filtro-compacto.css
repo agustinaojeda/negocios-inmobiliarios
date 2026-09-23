@@ -1,0 +1,19 @@
+.filtro-compacto .mb-4 {
+  margin-bottom: 0.75rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filtro-compacto .form-label {
+  display: inline-block !important;
+  margin-bottom: 0 !important;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 600 !important;
+}
+
+.filtro-compacto .btn {
+  padding: 0.2rem 0.75rem !important;
+  font-size: 0.8rem !important;
+}

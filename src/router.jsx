@@ -12,7 +12,7 @@ import InquilinoPage from './features/inquilino/pages/InquilinoPage'
 import AgentePage from './features/agente/pages/AgentePage'
 import AdminPage from './features/admin/pages/AdminPage'
 import InmueblesPage from './features/inmuebles/pages/InmueblesPage'
-import ContactoPage from './features/contacto/pages/ContactoPage'
+
 
 export const router = createBrowserRouter([
   // Rutas públicas con LayoutPublico
@@ -34,7 +34,6 @@ export const router = createBrowserRouter([
         loader: redirigirSiHaySesion,
         hydrateFallbackElement: <Spinner />,
       },
-      { path: 'contacto', element: <ContactoPage /> },
       { path: 'inmuebles', element: <InmueblesPage /> },
     ],
   },

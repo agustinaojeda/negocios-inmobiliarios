@@ -1,4 +1,4 @@
-import GrillaPropiedades from "../components/GrillaPropiedades";
+import GrillaPropiedades from "../../../shared/components/propiedades/GrillaPropiedades";
 import FiltroZonas from "../components/FiltroZonas";
 import FiltroPills from "../components/FiltroPills";
 import FiltroBusqueda from "../components/FiltroBusqueda";
