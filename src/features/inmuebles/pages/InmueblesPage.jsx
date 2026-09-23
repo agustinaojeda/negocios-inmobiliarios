@@ -103,7 +103,7 @@ function InmueblesPage() {
           </aside>
           
           {/**grilla de propiedades */}
-          <section className="col-lg-9">
+          <section className="col-lg-9" style={{ paddingTop: 0 }}>
             <p className="small text-body-secondary">
               Mostrando {filtros.propiedadesFiltradas?.length ?? 0} de{" "}
               {propiedades?.length ?? 0} propiedades
