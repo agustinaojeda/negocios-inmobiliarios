@@ -32,6 +32,7 @@ export async function registrarUsuario({ nombre, email, password, telefono, rol 
 
   // 1. Verificar si ya existe una cuenta con ese correo
   const yaExiste = usuarios.some((u) => u.email.toLowerCase() === emailLimpio)
+  //some devuelve valor booleano si cumple la condicion, si no la cumple devuelve undefined
   if (yaExiste) {
     throw new Error('Ya existe una cuenta registrada con este correo electrónico.')
   }
@@ -97,6 +98,8 @@ export function obtenerRutaPorRol(rol) {
       return '/admin'
     case 'propietario':
       return '/propietario'
+    case 'agente':
+      return '/agente'
     case 'inquilino':
     default:
       return '/inquilino'
@@ -111,12 +114,14 @@ export function protegerRuta() {
   if (!sesion) {
     throw redirect('/login')
   }
-  return sesion // lo recibe LayoutGestor con useLoaderData()
+  return sesion // lo recibe LayoutPrivado con useLoaderData()
 }
 
 export function redirigirSiHaySesion() {
-  if (obtenerSesion()) {
-    throw redirect('/gestor')
+  const sesion = obtenerSesion()
+  if (sesion) {
+    throw redirect(obtenerRutaPorRol(sesion.rol))
   }
   return null
 }
+

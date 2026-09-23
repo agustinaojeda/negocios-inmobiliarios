@@ -22,5 +22,13 @@
     "password": "inq123",
     "rol": "inquilino",
     "telefono": "1166778899"
+  },
+  {
+    "id": "usr-4",
+    "nombre": "Roberto Agente",
+    "email": "agente@inmobiliaria.com",
+    "password": "age123",
+    "rol": "agente",
+    "telefono": "1177889900"
   }
 ]
