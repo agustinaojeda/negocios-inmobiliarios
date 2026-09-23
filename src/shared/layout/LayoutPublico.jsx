@@ -1,5 +1,7 @@
 import { Outlet, ScrollRestoration } from "react-router"
 import Navbar from './Navbar'
+import Toast from "../components/Toast"
+import { useToast } from "../hooks/useToast";
 import logoDark from "/logoDark.png";
 import logoLight from "/logoLight.png";
 
@@ -46,6 +48,9 @@ export default function LayoutPublico() {
       icon: true,
     },
   ];
+  //el Toast vive aca y se puede disparar en cualquier pagina
+  const { mensaje, mostrarToast } = useToast();
+  
 
   return (
     <>
@@ -58,8 +63,9 @@ export default function LayoutPublico() {
         accionesMobile={accionesMobile}
       />
       <main>
-        <Outlet />
+        <Outlet  context={{ mostrarToast}}/>
       </main>
+      <Toast mensaje={mensaje} />
 
       <ScrollRestoration />
     </>
