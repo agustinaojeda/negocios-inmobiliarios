@@ -5,27 +5,27 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* Convertimos la sección en un contenedor flex para que estire a su hijo */
   display: flex; 
   flex-direction: column;
+  padding: 0 !important;
+  margin: 0;
 }
 
 .hero-overlay {
-  /* Eliminamos position: absolute, top, left y height */
   width: 100%;
-  flex: 1; /* Obliga a la capa oscura a crecer junto con la imagen de fondo */
+  flex: 1; 
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 3rem; /* Le da un respiro en la parte inferior para que las estadísticas no toquen el borde */
+  padding: 4rem 0 3rem 0; 
   z-index: 1;
 }
 
 .hero-content {
   position: relative;
-  z-index: 2; /* Levanta el texto y los botones por encima de la capa oscura */
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.7); /* Le da un leve sombreado al texto para que resalte más */
+  z-index: 2;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 .btn-hero-primary {
   font-size: 0.875rem;

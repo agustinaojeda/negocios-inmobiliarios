@@ -9,8 +9,8 @@ import Footer from "./Footer";
 export default function LayoutPublico() {
   const enlaces = [
     { id:"nav-inicio", text: "Inicio", url: "/" },
-    { id: "nav-nosotros", text: "Nosotros", url: "#about" },
-    { id: "nav-alquiler", text: "Alquila tu propiedad", url: "#formAlquiler" },
+    { id: "nav-nosotros", text: "Nosotros", url: "#nosotros" },
+    { id: "nav-alquiler", text: "Alquila tu propiedad", url: "#contacto" },
   ];
 
   const acciones = [
@@ -23,7 +23,7 @@ export default function LayoutPublico() {
     {
       id: "nav-cta-ver",
       text: "Ver propiedades",
-      url: "#propiedades",
+      url: "/inmuebles",
       className: "btn-nav-primary"
     },
     {

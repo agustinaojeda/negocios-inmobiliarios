@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import PropertyCard from './PropertyCard';
-import { useFiltros } from '../../inmuebles/hooks/useFiltros'; // Ajusta la ruta según tu proyecto
+import PropertyCard from '../../../shared/components/propiedades/PropertyCard';
+import { useFiltros } from '../../inmuebles/hooks/useFiltros'; 
 import './FeaturedGrid.css'; 
 
 export default function FeaturedGrid() {
@@ -75,7 +75,7 @@ export default function FeaturedGrid() {
   }, []);
 
   return (
-    <section id="propiedades" aria-labelledby="propiedades-title">
+    <section id="propiedades" aria-labelledby="propiedades-title" >
       <div className="container">
         
         <div ref={headerRef} className="section-header reveal">
@@ -86,7 +86,7 @@ export default function FeaturedGrid() {
             </h2>
             <p className="section-subtitle">Las mejores propiedades disponibles en el mercado hoy.</p>
           </div>
-          <a href="#propiedades" className="section-link">
+          <a href="/inmuebles" className="section-link">
             Ver todas
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
           </a>
