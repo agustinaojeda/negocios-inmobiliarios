@@ -4,6 +4,7 @@ import Toast from "../components/Toast"
 import { useToast } from "../hooks/useToast";
 import logoDark from "/logoDark.png";
 import logoLight from "/logoLight.png";
+import Footer from "./Footer";
 
 export default function LayoutPublico() {
   const enlaces = [
@@ -65,6 +66,7 @@ export default function LayoutPublico() {
       <main>
         <Outlet  context={{ mostrarToast}}/>
       </main>
+      <Footer />
       <Toast mensaje={mensaje} />
 
       <ScrollRestoration />
