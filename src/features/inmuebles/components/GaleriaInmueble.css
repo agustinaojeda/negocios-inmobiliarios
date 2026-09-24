@@ -1,0 +1,51 @@
+/* carrusel */
+.gallery-section { 
+  background: var(--white); 
+  padding: 1.5rem 0 0; 
+}
+
+.property-carousel {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--off-white);
+  box-shadow: var(--shadow-md);
+}
+
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.carousel-track::-webkit-scrollbar { 
+  display: none; 
+}
+
+.carousel-track img {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 16/7;
+  object-fit: cover;
+  scroll-snap-align: center;
+}
+
+.carousel-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; color: var(--navy-900);
+  cursor: pointer; transition: all var(--transition);
+  z-index: 10; border: none; padding-bottom: 3px;
+}
+
+.carousel-btn:hover { 
+  background: rgba(255,255,255,0.95); 
+  transform: translateY(-50%) scale(1.05); 
+}
+
+.carousel-btn.prev-btn { left: 1.5rem; }
+.carousel-btn.next-btn { right: 1.5rem; }
