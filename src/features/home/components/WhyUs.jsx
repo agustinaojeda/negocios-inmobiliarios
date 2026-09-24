@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import "./Whyus.css";
+import "./WhyUs.css";
 
 export default function WhyUs() {
   const sectionRef = useRef(null);
