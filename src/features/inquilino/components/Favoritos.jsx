@@ -1,29 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SeccionPropiedades from "../../../shared/components/propiedades/SeccionPropiedades";
-import { obtenerFavoritos } from "../services/favoritosService";
-import { obtenerPropiedadesDisponibles } from "../../inmuebles/services/inmueblesService";
-import { useFetch } from "../../../shared/hooks/useFetch";
+import { useFavoritos } from "../hooks/useFavoritos";
 
 export default function Favoritos() {
-  const { datos: respuesta = [], cargando, error } = useFetch(obtenerPropiedadesDisponibles);
-  const [idsFavoritos, setIdsFavoritos] = useState([]);
+  const { favoritos, cantidad, cargando, error } = useFavoritos();
 
-  const actualizarIds = () => {
-    const ids = (obtenerFavoritos() || []).map((id) => String(id));
-    setIdsFavoritos(ids);
-  };
-
-  useEffect(() => {
-    actualizarIds();
-    window.addEventListener("favoritosUpdated", actualizarIds);
-    return () => window.removeEventListener("favoritosUpdated", actualizarIds);
-  }, []);
-
-  // Extraer y filtrar array
-  let todas = Array.isArray(respuesta) ? respuesta : respuesta?.propiedades || respuesta?.data || [];
-  const favoritos = todas.filter((prop) => idsFavoritos.includes(String(prop?.id)));
-
-  const cantidad = favoritos.length;
   const subtitulo = `${cantidad} ${cantidad === 1 ? "propiedad guardada" : "propiedades guardadas"}`;
 
   return (
