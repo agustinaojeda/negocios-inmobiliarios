@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 import UserIcon from "../components/icons/UserIcon";
 import { obtenerSesion } from "../../features/auth/services/authService"
 import "./Navbar.css";
@@ -27,6 +27,9 @@ export default function Navbar({
   acciones = [],
   accionesMobile,
 }) {
+  
+  const location = useLocation();
+  const esHome = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeHref, setActiveHref] = useState(null);
@@ -67,13 +70,23 @@ export default function Navbar({
     return accion;
   });
 
-  // Efecto de scroll en la barra de navegación
+  // Efecto de scroll en la barra de navegación solo en home
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const handleScroll = () => {
+    if (!esHome) {
+      setScrolled(true);
+      return;
+    }
+
+    setScrolled(window.scrollY > 40);
+  };
+
+  handleScroll();
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+
+  return () => window.removeEventListener("scroll", handleScroll);
+  }, [esHome]);
 
   // Enlace de navegación activo al hacer scroll dentro de la página actual (#)
   useEffect(() => {
