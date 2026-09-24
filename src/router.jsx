@@ -12,6 +12,7 @@ import InquilinoPage from './features/inquilino/pages/InquilinoPage'
 import AgentePage from './features/agente/pages/AgentePage'
 import AdminPage from './features/admin/pages/AdminPage'
 import InmueblesPage from './features/inmuebles/pages/InmueblesPage'
+import DetalleInmueblesPage from './features/inmuebles/pages/DetalleInmueblesPage'
 
 
 export const router = createBrowserRouter([
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
         hydrateFallbackElement: <Spinner />,
       },
       { path: 'inmuebles', element: <InmueblesPage /> },
+      { path: 'inmueble/:id', element: <DetalleInmueblesPage /> },
     ],
   },
 
