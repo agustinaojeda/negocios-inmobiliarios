@@ -1,0 +1,6 @@
+export { default as AgentePage } from './pages/AgentePage'
+export { default as CarteraInmuebles } from './components/CarteraInmuebles'
+export { default as ModalFormularioInmuebles } from './components/ModalFormularioInmuebles'
+export { default as AgendaVisitas } from './components/AgendaVisitas'
+export { default as DesempenoAgente } from './components/DesempenoAgente'
+export * from './services/agenteService'
