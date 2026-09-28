@@ -11,7 +11,7 @@ function GrillaPropiedades({ propiedades, citas, esCita=false, esAsignado = fals
           {esModoCita ? (
             <PropertyCard cita={item} />
           ) : (
-            <PropertyCard property={item} />
+            <PropertyCard property={item} esAsignado={esAsignado} />
           )}
         </div>
       ))}

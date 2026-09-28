@@ -32,7 +32,6 @@ export default function PropiedadesSimilares() {
     if (headerRef.current) observer.observe(headerRef.current);
     return () => observer.disconnect();
     
-  // 👇 Agregamos 'cargando' y 'propiedades' al arreglo de dependencias
   }, [cargando, propiedades]);
 
   if (cargando || error || !propiedades || propiedades.length === 0) return null;

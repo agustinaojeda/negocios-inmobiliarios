@@ -1,33 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router';
 import PropertyCard from '../../../shared/components/propiedades/PropertyCard';
+import Spinner from '../../../shared/components/Spinner';
+import MensajeVacio from '../../../shared/components/MensajeVacio';
+import { useFetch } from '../../../shared/hooks/useFetch';
+import { obtenerPropiedadesDisponibles } from '../../inmuebles/services/inmueblesService';
 import { useFiltros } from '../../inmuebles/hooks/useFiltros'; 
 import './FeaturedGrid.css'; 
 
 export default function FeaturedGrid() {
-  const [propertiesDB, setPropertiesDB] = useState([]);
+  const { datos: propiedades, cargando, error } = useFetch(obtenerPropiedadesDisponibles);
   const [sort, setSort] = useState('newest');
   const [activeTab, setActiveTab] = useState('todas');
   
-  // Nuevo estado para controlar si se muestran todas las propiedades
+  // Controla si se muestran todas las propiedades o las primeras 4
   const [mostrarTodas, setMostrarTodas] = useState(false);
   
   const headerRef = useRef(null);
   const controlsRef = useRef(null);
   const btnRef = useRef(null);
 
-  useEffect(() => {
-    fetch('/data/propiedades.json')
-      .then(res => res.json())
-      .then(data => setPropertiesDB(data))
-      .catch(err => console.error("Error al cargar propiedades:", err));
-  }, []);
-
   const { 
     setTipo, 
     setCategoria, 
     propiedadesFiltradas,
     limpiarFiltros 
-  } = useFiltros(propertiesDB);
+  } = useFiltros(propiedades);
 
   const handleFilterClick = (filterValue, filterType) => {
     setActiveTab(filterValue);
@@ -86,10 +84,10 @@ export default function FeaturedGrid() {
             </h2>
             <p className="section-subtitle">Las mejores propiedades disponibles en el mercado hoy.</p>
           </div>
-          <a href="/inmuebles" className="section-link">
+          <Link to="/inmuebles" className="section-link">
             Ver todas
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-          </a>
+          </Link>
         </div>
 
         <div ref={controlsRef} className="listings-controls reveal">
@@ -131,12 +129,19 @@ export default function FeaturedGrid() {
           </div>
         </div>
 
-        <div className="properties-grid">
-          {/* Mapeamos el arreglo derivado 'propiedadesAMostrar' */}
+       {cargando && <Spinner texto="Cargando propiedades..." />}
+
+        {error && (
+          <MensajeVacio titulo="No pudimos cargar las propiedades" texto={error.message} />
+        )}
+
+        {!cargando && !error && (
+          <div className="properties-grid">
           {propiedadesAMostrar.map((prop) => (
-            <PropertyCard key={prop.id} property={prop} />
+          <PropertyCard key={prop.id} property={prop} />
           ))}
-        </div>
+           </div>
+        )}
 
         {/* Solo mostramos el botón si hay más de 4 propiedades y 'mostrarTodas' es falso */}
         
