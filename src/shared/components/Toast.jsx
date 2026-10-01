@@ -1,4 +1,4 @@
-import "./Toast.css";
+import "../Styles/Toast.css";
 
 export default function Toast({ mensaje }) {
   if (!mensaje) return null;

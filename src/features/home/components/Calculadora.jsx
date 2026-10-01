@@ -1,4 +1,4 @@
-import "./Calculadora.css";
+import "../styles/Calculadora.css";
 
 export default function Calculadora() {
   return (

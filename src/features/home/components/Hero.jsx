@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./Hero.css";
+import "../styles/Hero.css";
 import heroImg from "../../../assets/hero.jpg"; 
 import Buscador from "./Buscador";
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useFetch } from '../../../shared/hooks/useFetch';
 import { obtenerUltimas } from '../services/inmueblesService';
 import GrillaPropiedades from '../../../shared/components/propiedades/GrillaPropiedades';
-import './PropiedadesSimilares.css';
+import '../styles/PropiedadesSimilares.css';
 
 export default function PropiedadesSimilares() {
   // Traemos las últimas 3 propiedades disponibles

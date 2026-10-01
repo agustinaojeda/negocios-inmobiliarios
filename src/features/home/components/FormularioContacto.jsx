@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router";
 import { esRequerido, esEmailValido } from "../../../shared/utils/validaciones";
-import "./FormularioContacto.css";
+import "../styles/FormularioContacto.css";
 
 
 const DATOS_INICIALES = {

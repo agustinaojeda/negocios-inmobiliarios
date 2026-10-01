@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import UserIcon from "../components/icons/UserIcon";
 import { obtenerSesion } from "../../features/auth/services/authService"
-import "./Navbar.css";
+import "../Styles/Navbar.css";
 
 /**
  * Navbar fiel al diseño original (navy/dorado):

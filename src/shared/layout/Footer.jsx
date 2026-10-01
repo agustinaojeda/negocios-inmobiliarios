@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router'; 
-import './Footer.css';
+import "../Styles/Footer.css";
+
 import logoLight from '/logoLight.png'; 
 
 export default function Footer() {

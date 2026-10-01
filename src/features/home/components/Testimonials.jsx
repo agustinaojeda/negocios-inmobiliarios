@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import "./Testimonials.css";
+import "../styles/Testimonials.css";
 
 const testimonialsData = [
   {

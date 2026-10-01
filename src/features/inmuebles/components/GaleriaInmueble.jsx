@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './GaleriaInmueble.css';
+import '../styles/GaleriaInmueble.css';
 
 export default function GaleriaInmueble({ imagen, titulo }) {
   const [animando, setAnimando] = useState(false);

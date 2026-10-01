@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Buscador.css';
+import '../styles/Buscador.css';
 import { useOutletContext } from 'react-router';
 
 export default function Buscador() {

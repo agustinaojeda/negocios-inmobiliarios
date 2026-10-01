@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { esRequerido, esEmailValido } from '../../../shared/utils/validaciones';
-import './ContactoAsesor.css';
+import '../styles/ContactoAsesor.css';
 
 export default function ContactoAsesor({ tituloPropiedad, mostrarToast }) {
   const [valores, setValores] = useState({

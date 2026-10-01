@@ -1,5 +1,5 @@
 import React from 'react';
-import './FichaTecnica.css';
+import '../styles/FichaTecnica.css';
 
 export default function FichaTecnica({ propiedad }) {
   const precioFormateado = propiedad.precio.toLocaleString('es-AR');

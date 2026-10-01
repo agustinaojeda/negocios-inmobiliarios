@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../components/DetalleInmueblesPage.css';
+import '../styles/DetalleInmueblesPage.css';
 import { useParams, useOutletContext } from 'react-router';
 import { useFetch } from '../../../shared/hooks/useFetch';
 import Spinner from '../../../shared/components/Spinner';

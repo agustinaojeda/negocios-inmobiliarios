@@ -1,4 +1,4 @@
-import "./InfoContacto.css";
+import "../styles/InfoContacto.css";
 
 
 const TELEFONO = "+541100000000";

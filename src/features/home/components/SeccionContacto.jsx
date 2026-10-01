@@ -1,6 +1,6 @@
 import InfoContacto from "./InfoContacto";
 import FormularioContacto from "./FormularioContacto";
-import "./SeccionContacto.css";
+import "../styles/SeccionContacto.css";
 
 export default function SeccionContacto() {
   return (

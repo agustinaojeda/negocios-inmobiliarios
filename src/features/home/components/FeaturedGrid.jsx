@@ -6,7 +6,7 @@ import MensajeVacio from '../../../shared/components/MensajeVacio';
 import { useFetch } from '../../../shared/hooks/useFetch';
 import { obtenerPropiedadesDisponibles } from '../../inmuebles/services/inmueblesService';
 import { useFiltros } from '../../inmuebles/hooks/useFiltros'; 
-import './FeaturedGrid.css'; 
+import '../styles/FeaturedGrid.css'; 
 
 export default function FeaturedGrid() {
   const { datos: propiedades, cargando, error } = useFetch(obtenerPropiedadesDisponibles);
