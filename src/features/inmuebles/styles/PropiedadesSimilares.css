@@ -1,0 +1,72 @@
+.similar-section {
+  padding: 4rem 0;
+  background: var(--off-white);
+  border-top: 1px solid var(--gray-200);
+}
+
+.similar-carousel-container {
+  position: relative;
+  width: 100%;
+}
+
+.similar-carousel-btn {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  box-shadow: var(--shadow-md);
+  color: var(--navy-800);
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.similar-carousel-btn:hover {
+  background: var(--navy-900);
+  color: var(--white);
+  border-color: var(--navy-900);
+}
+
+.similar-carousel-btn.prev { left: -20px; }
+.similar-carousel-btn.next { right: -20px; }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .similar-carousel-btn {
+    display: flex;
+  }
+  
+  .similar-carousel-btn.prev { left: 8px; }
+  .similar-carousel-btn.next { right: 8px; }
+  
+  /* Hacemos que la fila de Bootstrap (.row) se vuelva scrolleable en móvil */
+  .similar-grid-wrapper .row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.5rem 0.25rem 1.5rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .similar-grid-wrapper .row::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hacemos que las columnas de Bootstrap ocupen el 100% en móvil para el carrusel */
+  .similar-grid-wrapper .col {
+    flex: 0 0 100%;
+    max-width: 100%;
+    scroll-snap-align: start;
+  }
+}

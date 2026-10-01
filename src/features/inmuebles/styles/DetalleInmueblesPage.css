@@ -1,0 +1,93 @@
+/* ── Desplazamiento superior de página ─────────── */
+.page-top { 
+  padding-top: 72px; 
+}
+
+/* ── Diseño principal (Layout grid) ────────────── */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2.5rem;
+  align-items: start;
+  padding: 2.5rem 0 5rem;
+}
+
+
+.property-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-100);
+  padding: 1rem 0;
+}
+
+.property-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.topbar-left { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.75rem; 
+  flex-wrap: wrap; 
+}
+
+.topbar-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.95rem;
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.topbar-badge.venta {
+  background: rgba(30, 58, 115, 0.08);
+  color: var(--navy-700);
+  border: 1px solid rgba(30, 58, 115, 0.2);
+}
+
+.topbar-badge.disponible {
+  background: rgba(201, 168, 76, 0.1);
+  color: var(--gold-500);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.topbar-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.6rem; 
+}
+
+.topbar-btn {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-700);
+  transition: all var(--transition);
+  background: var(--white);
+}
+
+.topbar-btn:hover { 
+  border-color: var(--navy-600); 
+  color: var(--navy-700); 
+}
+
+.topbar-btn.active {
+  border-color: #ef4444; 
+  color: #ef4444; 
+}
+
+/* ── Responsive general ───────────────────────── */
+@media (max-width: 1100px) {
+  .detail-layout { grid-template-columns: 1fr; }
+  .topbar-actions { flex-wrap: wrap; }
+}
