@@ -8,7 +8,7 @@ import { obtenerPropiedadesDisponibles } from '../../inmuebles/services/inmueble
 import { useFiltros } from '../../inmuebles/hooks/useFiltros'; 
 import '../styles/FeaturedGrid.css'; 
 
-export default function FeaturedGrid() {
+export default function FeaturedGrid({ busqueda = '' }) {
   const { datos: propiedades, cargando, error } = useFetch(obtenerPropiedadesDisponibles);
   const [sort, setSort] = useState('newest');
   const [activeTab, setActiveTab] = useState('todas');
@@ -41,7 +41,11 @@ export default function FeaturedGrid() {
     }
   };
 
-  const sortedProperties = [...propiedadesFiltradas].sort((a, b) => {
+  const texto = busqueda.trim().toLowerCase();
+
+  const sortedProperties = [...propiedadesFiltradas]
+    .filter((p) => p.titulo.toLowerCase().includes(texto) || p.zona.toLowerCase().includes(texto))
+    .sort((a, b) => {
     if (sort === 'price-asc') return a.precio - b.precio;
     if (sort === 'price-desc') return b.precio - a.precio;
     return b.id - a.id; 
@@ -141,6 +145,10 @@ export default function FeaturedGrid() {
           <PropertyCard key={prop.id} property={prop} />
           ))}
            </div>
+        )}
+
+        {!cargando && !error && sortedProperties.length === 0 && (
+          <MensajeVacio titulo="No se encontraron propiedades" texto="Probá con otra zona o nombre." />
         )}
 
         {/* Solo mostramos el botón si hay más de 4 propiedades y 'mostrarTodas' es falso */}

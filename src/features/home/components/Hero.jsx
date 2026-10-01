@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/Hero.css";
 import heroImg from "../../../assets/hero.jpg"; 
-import Buscador from "./Buscador";
+import FiltroBusqueda from "../../inmuebles/components/FiltroBusqueda";
 
 // Subcomponente para animar los números individualmente
 const AnimatedCounter = ({ target, suffix, startAnimation }) => {
@@ -30,7 +30,11 @@ const AnimatedCounter = ({ target, suffix, startAnimation }) => {
   );
 };
 
-export default function Hero() {
+export default function Hero({ busqueda, onBuscar }) {
+  const irAResultados = (e) => {
+    e?.preventDefault();
+    document.getElementById("propiedades")?.scrollIntoView({ behavior: "smooth" });
+  };
   const statsRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -66,8 +70,13 @@ export default function Hero() {
             Encontrá casas, departamentos y PH en venta o alquiler en las mejores ubicaciones de Argentina, con asesoramiento profesional y operaciones seguras.
           </p>
           
-          {/* El Buscador Rápido que hicimos antes */}
-          <Buscador />
+          <form className="mx-auto" style={{ maxWidth: 800 }} onSubmit={irAResultados}>
+            <FiltroBusqueda
+              busqueda={busqueda}
+              onBuscar={onBuscar}
+              onEjecutarBusqueda={irAResultados}
+            />
+          </form>
 
           {/* Métricas de Confianza */}
           <div className="hero-stats" ref={statsRef}>
