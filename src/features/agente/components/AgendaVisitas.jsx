@@ -2,14 +2,10 @@ import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
 import Toast from '../../../shared/components/Toast'
 import { useAgendaVisitas } from '../hooks/useAgendaVisitas'
+import { FiltroPills } from '../../inmuebles'
+import './filtro-compacto.css'
 
-const FILTROS_CITAS = [
-  { id: 'todas', label: 'Todas las Visitas' },
-  { id: 'pendiente', label: 'Pendientes' },
-  { id: 'confirmada', label: 'Confirmadas' },
-  { id: 'completada', label: 'Completadas' },
-  { id: 'cancelada', label: 'Canceladas' },
-]
+const OPCIONES_ESTADO = ['todas', 'pendiente', 'confirmada', 'completada', 'cancelada']
 
 const BADGES_ESTADO = {
   confirmada: 'bg-success text-white',
@@ -55,17 +51,14 @@ export default function AgendaVisitas({ agenteId }) {
           </p>
         </div>
 
-        {/* Filtros rápidos */}
-        <div className="btn-group btn-group-sm">
-          {FILTROS_CITAS.map((f) => (
-            <button
-              key={f.id}
-              className={`btn ${filtro === f.id ? 'btn-dark' : 'btn-outline-secondary'}`}
-              onClick={() => setFiltro(f.id)}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* Filtros rápidos con FiltroPills y estilo compacto */}
+        <div className="filtro-compacto">
+          <FiltroPills
+            titulo="Filtrar por estado:"
+            opciones={OPCIONES_ESTADO}
+            seleccionado={filtro}
+            onSeleccionar={setFiltro}
+          />
         </div>
       </div>
 

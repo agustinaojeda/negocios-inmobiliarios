@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { useFetch } from '../../../shared/hooks/useFetch'
-import { obtenerPropiedades } from '../../inmuebles'
+import { obtenerPropiedades, FiltroPills } from '../../inmuebles'
 import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
 import TablaGestionInmuebles from '../../../shared/components/propiedades/TablaGestionInmuebles'
+import './filtro-compacto.css'
 
 export default function GestionInmuebles() {
   const { datos: propiedades = [], cargando, error } = useFetch(obtenerPropiedades)
-  const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [filtroEstado, setFiltroEstado] = useState('todas')
 
   const listaPropiedades = propiedades || []
   const propiedadesFiltradas =
-    filtroEstado === 'todos'
+    filtroEstado === 'todas' || filtroEstado === 'todos'
       ? listaPropiedades
       : listaPropiedades.filter((p) => p.estado === filtroEstado)
 
@@ -34,17 +35,14 @@ export default function GestionInmuebles() {
         </button>
       </div>
 
-      {/* Filtros rápidos por estado */}
-      <div className="btn-group btn-group-sm mb-3">
-        {['todos', 'disponible', 'reservado', 'vendido'].map((estado) => (
-          <button
-            key={estado}
-            className={`btn ${filtroEstado === estado ? 'btn-dark' : 'btn-outline-secondary'}`}
-            onClick={() => setFiltroEstado(estado)}
-          >
-            {estado.toUpperCase()}
-          </button>
-        ))}
+      {/* Filtros rápidos por estado con FiltroPills y estilo compacto */}
+      <div className="filtro-compacto mb-3">
+        <FiltroPills
+          titulo="Filtrar por estado:"
+          opciones={['todas', 'disponible', 'reservado', 'vendido']}
+          seleccionado={filtroEstado}
+          onSeleccionar={setFiltroEstado}
+        />
       </div>
 
       {/* Tabla Compartida de Gestión */}

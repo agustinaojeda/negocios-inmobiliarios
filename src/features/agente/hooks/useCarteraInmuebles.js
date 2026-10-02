@@ -6,6 +6,7 @@ import {
     cambiarEstadoPropiedad,
     eliminarPropiedadAgente,
 } from '../services/agenteService'
+import { useToast } from '../../../shared/hooks/useToast'
 
 export function useCarteraInmuebles(agenteId) {
     const { datos: iniciales = [], cargando, error } = useFetch(
@@ -14,26 +15,19 @@ export function useCarteraInmuebles(agenteId) {
     )
 
     const [propiedades, setPropiedades] = useState([])
-    const [filtroEstado, setFiltroEstado] = useState('todos')
+    const [filtroEstado, setFiltroEstado] = useState('todas')
     const [modalAbierto, setModalAbierto] = useState(false)
     const [propiedadAEditar, setPropiedadAEditar] = useState(null)
-    const [notificacion, setNotificacion] = useState('')
+    const { mensaje: notificacion, mostrarToast: setNotificacion } = useToast()
 
     // Sincronizar datos cuando useFetch responde
     useEffect(() => {
         if (iniciales) setPropiedades(iniciales)
     }, [iniciales])
 
-    // Temporizador para limpiar notificaciones
-    useEffect(() => {
-        if (!notificacion) return
-        const timer = setTimeout(() => setNotificacion(''), 3500)
-        return () => clearTimeout(timer)
-    }, [notificacion])
-
     // Lista derivada según filtro
     const propiedadesFiltradas =
-        filtroEstado === 'todos'
+        filtroEstado === 'todas' || filtroEstado === 'todos'
             ? propiedades
             : propiedades.filter((p) => p.estado === filtroEstado)
 

@@ -4,8 +4,10 @@ import Toast from '../../../shared/components/Toast'
 import TablaGestionInmuebles from '../../../shared/components/propiedades/TablaGestionInmuebles'
 import ModalFormularioInmuebles from './ModalFormularioInmuebles'
 import { useCarteraInmuebles } from '../hooks/useCarteraInmuebles'
+import { FiltroPills } from '../../inmuebles'
+import './filtro-compacto.css'
 
-const ESTADOS_FILTRO = ['todos', 'disponible', 'reservado', 'alquilado', 'vendido']
+const ESTADOS_FILTRO = ['todas', 'disponible', 'reservado', 'alquilado', 'vendido']
 
 export default function CarteraInmuebles({ agenteId }) {
   const {
@@ -51,17 +53,14 @@ export default function CarteraInmuebles({ agenteId }) {
         </button>
       </div>
 
-      {/* Filtros rápidos */}
-      <div className="btn-group btn-group-sm mb-3">
-        {ESTADOS_FILTRO.map((estado) => (
-          <button
-            key={estado}
-            className={`btn ${filtroEstado === estado ? 'btn-dark' : 'btn-outline-secondary'}`}
-            onClick={() => setFiltroEstado(estado)}
-          >
-            {estado.toUpperCase()}
-          </button>
-        ))}
+      {/* Filtros rápidos con FiltroPills y estilo compacto */}
+      <div className="filtro-compacto mb-3">
+        <FiltroPills
+          titulo="Filtrar por estado:"
+          opciones={ESTADOS_FILTRO}
+          seleccionado={filtroEstado}
+          onSeleccionar={setFiltroEstado}
+        />
       </div>
 
       {/* Tabla de Gestión Reutilizable */}

@@ -1,7 +1,6 @@
 import { useOutletContext } from 'react-router'
 import CarteraInmuebles from '../components/CarteraInmuebles'
 import AgendaVisitas from '../components/AgendaVisitas'
-import DesempenoAgente from '../components/DesempenoAgente'
 import InformacionContacto from '../../../shared/components/panel/InfoContacto'
 import Seguridad from '../../../shared/components/panel/Seguridad'
 
@@ -18,9 +17,6 @@ export default function AgentePage() {
         <AgendaVisitas agenteId={sesion?.id} />
       )}
 
-      {seccionActiva === 'clientes' && (
-        <DesempenoAgente agenteId={sesion?.id} />
-      )}
 
       {seccionActiva === 'consultas' && (
         <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">

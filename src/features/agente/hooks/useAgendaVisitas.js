@@ -1,23 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useFetch } from '../../../shared/hooks/useFetch'
 import { obtenerCitasAgente, actualizarEstadoCita } from '../services/agenteService'
+import { useToast } from '../../../shared/hooks/useToast'
 
 export function useAgendaVisitas(agenteId) {
   const { datos: iniciales = [], cargando, error } = useFetch(obtenerCitasAgente, agenteId)
+  const { mensaje: notificacion, mostrarToast: setNotificacion } = useToast()
 
   const [citas, setCitas] = useState([])
   const [filtro, setFiltro] = useState('todas')
-  const [notificacion, setNotificacion] = useState('')
 
   useEffect(() => {
     if (iniciales) setCitas(iniciales)
   }, [iniciales])
-
-  useEffect(() => {
-    if (!notificacion) return
-    const timer = setTimeout(() => setNotificacion(''), 3500)
-    return () => clearTimeout(timer)
-  }, [notificacion])
 
   const citasFiltradas =
     filtro === 'todas' ? citas : citas.filter((c) => c.estado === filtro)
