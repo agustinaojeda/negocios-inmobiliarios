@@ -33,6 +33,14 @@
 
 ---
 
+### Equipo
+
+- [Lucas Aguirre](https://github.com/lucasnahuel1036)
+- [Fernando Garcia](https://github.com/fernan597)
+- [Agustina Ojeda](https://github.com/agustinaojeda) 
+
+---
+
 ### Instalación y Configuración Local
 
 1. **Clonar el repositorio:**
