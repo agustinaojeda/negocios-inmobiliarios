@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router";
-import GrillaPropiedades from "../../../shared/components/propiedades/GrillaPropiedades";
-import MensajeVacio from "../../../shared/components/MensajeVacio";
-import Spinner from "../../../shared/components/Spinner";
+import GrillaPropiedades from "./GrillaPropiedades";
+import MensajeVacio from "../MensajeVacio";
+import Spinner from "../Spinner";
 
 export default function SeccionPropiedades({
   titulo,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMisPropiedades } from "../hooks/useMisPropiedades.js";
-import SeccionPropiedades from "../../../shared/components/propiedades/SeccionPropiedades";
-import FiltroPills from "../../inmuebles/components/FiltroPills";
+import SeccionPropiedades from "../../../shared/components/propiedades/SeccionPropiedades.jsx";
+import FiltroPills from "../../inmuebles/components/FiltroPills.jsx";
 
 export default function MisPropiedades({ propietarioId = null }) {
   const [subVista, setSubVista] = useState("inmuebles"); // 'inmuebles' | 'citas'

@@ -5,7 +5,7 @@
 
 import { Link } from "react-router";
 import React, { useState, useEffect, useRef } from "react";
-import { formatearPrecio, capitalizar } from "../../../shared/utils/formato";
+import { formatearPrecio, capitalizar } from "../../utils/formato";
 import {
   esFavorito,
   toggleFavorito,

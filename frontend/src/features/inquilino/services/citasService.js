@@ -1,6 +1,7 @@
 import { obtenerPropiedades } from "../../inmuebles/services/inmueblesService";
 import { obtenerTodosLosUsuarios } from "../../auth/services/authService";
-const URL_BASE = '/data';
+
+const URL_BASE = '/data'
 
 export async function obtenerCitas() {
   const respuesta = await fetch(`${URL_BASE}/citas.json`);

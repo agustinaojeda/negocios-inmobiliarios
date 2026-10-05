@@ -1,5 +1,6 @@
 //busca las propiedades a la bd o json en este caso, es el unico que puede hacer fetch
 import { obtenerTodosLosUsuarios } from "../../auth/services/authService"
+
 const URL_BASE = '/data'
 
 export async function obtenerPropiedades() { //devuelve todas
