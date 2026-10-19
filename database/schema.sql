@@ -2,10 +2,10 @@
 -- Ejecutar con: psql -U postgres -f database/schema.sql
 
 -- Comillas dobles porque el nombre tiene guion
-CREATE DATABASE "negocios-inmobiliarios";
+--CREATE DATABASE "negocios-inmobiliarios";
 
 -- Conectarse a la base recién creada (comando de psql)
-\c "negocios-inmobiliarios"
+--\c "negocios-inmobiliarios"
 
 -- Borrar tablas si existen para reiniciar el esquema correctamente
 DROP TABLE IF EXISTS citas CASCADE;

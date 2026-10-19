@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node servidor.js",
-    "dev": "node --watch servidor.js"
+    "dev": "node --watch servidor.js",
+    "db:migrate": "node -e \"import('./src/config/initDb.js').then(m => m.runMigrations().then(() => process.exit()))\""
   },
+  
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^18.0.8",
