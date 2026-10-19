@@ -1,19 +1,4 @@
-const express = require("express");
-const app = express();
+import app from './app.js';
+import { env } from './config/env.js';
 
-app.use(
-  "/data",
-  (req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    next();
-  },
-  express.static("data"),
-);
-
-app.get("/", (req, res) => {
-  res.send("Hola desde Express");
-});
-
-app.listen(3000, () => {
-  console.log("Servidor escuchando en el puerto 3000");
-});
+app.listen(env.PORT, () => console.log(`Servidor en http://localhost:${env.PORT}`));
