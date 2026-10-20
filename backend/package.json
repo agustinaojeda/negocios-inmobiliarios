@@ -5,12 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node servidor.js",
-    "dev": "node --watch servidor.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "db:migrate": "node -e \"import('./src/config/initDb.js').then(m => m.runMigrations().then(() => process.exit()))\""
   },
-  
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
