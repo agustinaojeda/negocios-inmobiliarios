@@ -19,4 +19,7 @@ router.put('/:id', verificarToken, verificarRol('agente'), controller.actualizar
 router.delete('/:id', verificarToken, verificarRol('agente'), controller.eliminar);
 router.patch('/:id/activar', verificarToken, verificarRol('agente'), controller.activar);
 
+//agente y propietario
+router.get('/:id/historial-precios', verificarToken, verificarRol('agente', 'propietario'), controller.obtenerHistorial);
+
 export default router;

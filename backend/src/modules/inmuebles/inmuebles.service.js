@@ -69,6 +69,7 @@ export const crear = async (datos, id) => {
 };
 
 export const actualizar = async (id, datos, agenteId) => {
+  //guarda cambios y si hubo variaciones en el precio lo mete en la tabla historial
   const propiedadExistente = await repository.obtener(id, true);
   if (!propiedadExistente) {
     return null;
@@ -85,7 +86,7 @@ export const actualizar = async (id, datos, agenteId) => {
     return errorValidacion;
   }
 
-  const { propietario_id, imagenes } = datos;
+  const { propietario_id, imagenes, precio } = datos;
 
   if (propietario_id) {
     const esValido = await repository.esPropietario(propietario_id);
@@ -97,6 +98,9 @@ export const actualizar = async (id, datos, agenteId) => {
     }
   }
 
+  const precioAnterior = Number(propiedadExistente.precio);
+  const precioNuevo = Number(precio);
+
   const datosCompletos = {
     ...datos,
     propietario_id: propietario_id || null,
@@ -104,6 +108,10 @@ export const actualizar = async (id, datos, agenteId) => {
   };
 
   const propiedadActualizada = await repository.actualizar(id, datosCompletos);
+
+  if (!isNaN(precioNuevo) && precioAnterior !== precioNuevo) {
+    await repository.registrarHistorialPrecio(id, precioAnterior, precioNuevo);
+  }
 
   let imagenesGuardadas = [];
   if (imagenes && imagenes.length > 0) {
@@ -153,13 +161,38 @@ export const activar = async (id, agenteId) => {
   }
 
   if (propiedad.estado_visibilidad == "activo") {
-    return {error: 'Esta propiedad ya se encuentra activa.'}
+    return { error: "Esta propiedad ya se encuentra activa." };
   }
 
   const propiedadActivada = await repository.activar(id);
   return propiedadActivada;
 };
 
+//historial
+export const obtenerHistorialPrecios = async (id, usuario) => {
+  const propiedad = await repository.obtener(id, true);
+  if (!propiedad) {
+    return null;
+  }
+
+  const esSuAgente = propiedad.agente_id === usuario.id;
+  const esSuPropietario = propiedad.propietario_id === usuario.id;
+
+  if (!esSuAgente && !esSuPropietario) {
+    return { forbidden: true };
+  }
+
+  const historial = await repository.obtenerHistorialPrecios(id);
+
+  return {
+    propiedad_id: propiedad.id,
+    precio_actual: propiedad.precio,
+    moneda: propiedad.moneda,
+    historial,
+  };
+};
+
+//validacion
 function validar(datos) {
   const {
     titulo,

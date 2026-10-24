@@ -221,3 +221,25 @@ export const activar = async (req, res, next) => {
     next(err);
   }
 };
+
+//historial
+export const obtenerHistorial = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const usuario = req.usuario; 
+
+    const resultado = await service.obtenerHistorialPrecios(id, usuario);
+
+    if (resultado === null) {
+      return res.status(404).json({ error: 'Inmueble no encontrado' });
+    }
+
+    if (resultado.forbidden) {
+      return res.status(403).json({ error: 'No tenés permisos para ver el historial de este inmueble' });
+    }
+
+    return res.status(200).json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};

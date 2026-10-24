@@ -60,6 +60,26 @@ export const eliminarImagenes = async (propiedadId) => {
   await pool.query(query, [propiedadId]);
 };
 
+//historial precios
+export const registrarHistorialPrecio = async (propiedadId, precioAnterior, precioNuevo) => {
+  const query = `INSERT INTO historial_precios (propiedad_id, precio_anterior, precio_nuevo, fecha_cambio)
+    VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+    RETURNING *;
+  `;
+  const { rows } = await pool.query(query, [propiedadId, precioAnterior, precioNuevo]);
+  return rows[0];
+};
+
+export const obtenerHistorialPrecios = async (propiedadId) => {
+  const query = `SELECT id, propiedad_id, precio_anterior, precio_nuevo, fecha_cambio
+    FROM historial_precios
+    WHERE propiedad_id = $1
+    ORDER BY fecha_cambio ASC;
+  `;
+  const { rows } = await pool.query(query, [propiedadId]);
+  return rows;
+};
+
 //propiedades
 
 export const listar = async (filtros = {}, incluirInactivas = false) => {
