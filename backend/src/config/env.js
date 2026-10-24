@@ -8,7 +8,7 @@ export const env = {
   PGPORT: process.env.PGPORT ?? 5432,
   PGUSER: process.env.PGUSER ?? 'postgres',
   PGPASSWORD: process.env.PGPASSWORD ?? 'postgres',
-  PGDATABASE: process.env.PGDATABASE ?? 'muestra-node',
+  PGDATABASE: process.env.PGDATABASE ?? 'negocios-inmobiliarios',
 
   // JWT: clave para firmar los tokens y cuánto duran
   JWT_SECRET: process.env.JWT_SECRET, // sin valor por defecto: el secreto NUNCA va en el código
