@@ -1,22 +1,18 @@
 import { obtenerSesion, obtenerTodosLosUsuarios } from '../../auth/services/authService'
 
-const URL_BASE = '/data'
+const URL_BASE2 = '/data'
 const CLAVE_PROPIEDADES = 'negocios-inmobiliarios:propiedades'
 const CLAVE_CITAS = 'negocios-inmobiliarios:citas'
 
-// --- UTILIDADES LOCAL STORAGE ---
-function obtenerPropiedadesLocal() {
-  try {
-    const data = localStorage.getItem(CLAVE_PROPIEDADES)
-    return data ? JSON.parse(data) : null
-  } catch {
-    return null
-  }
+const URL_BASE = 'http://localhost:3000/api'
+
+function obtenerHeadersAuth() {
+  const sesion = obtenerSesion()
+  const token = sesion?.token 
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-function guardarPropiedadesLocal(propiedades) {
-  localStorage.setItem(CLAVE_PROPIEDADES, JSON.stringify(propiedades))
-}
+// --- UTILIDADES LOCAL STORAGE ---
 
 function obtenerCitasLocal() {
   try {
@@ -34,116 +30,129 @@ function guardarCitasLocal(citas) {
 // --- GESTIÓN DE PROPIEDADES ---
 
 /**
- * Obtiene todas las propiedades (localStorage o json inicial)
+ * Obtiene todas las propiedades desde la api
  */
 export async function obtenerTodasLasPropiedades() {
-  const local = obtenerPropiedadesLocal()
-  if (local && local.length > 0) {
-    return local
-  }
-
   try {
-    const res = await fetch(`${URL_BASE}/propiedades.json`)
-    if (res.ok) {
-      const propiedadesBase = await res.json()
-      guardarPropiedadesLocal(propiedadesBase)
-      return propiedadesBase
+    const res = await fetch(`${URL_BASE}/inmuebles/panel`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...obtenerHeadersAuth(),
+      },
+    })
+
+    const datos = await res.json()
+
+    if (!res.ok) {
+      throw new Error(datos.error || 'Error al obtener la lista de inmuebles')
     }
+
+    return Array.isArray(datos) ? datos : datos.propiedades || []
   } catch (err) {
     console.warn('No se pudo cargar propiedades.json inicial:', err)
+    return []
   }
-
-  return []
 }
-
 /**
  * Obtiene las propiedades asignadas a un agente
  */
 export async function obtenerPropiedadesAgente(agenteId) {
-  const todas = await obtenerTodasLasPropiedades()
-  const idObjetivo = agenteId || obtenerSesion()?.id
+  const propiedades = await obtenerTodasLasPropiedades()
+  return propiedades
 
-  if (!idObjetivo) return todas
-
-  return todas.filter(
-    (p) => String(p.agenteId) === String(idObjetivo) || !p.agenteId
-  )
 }
 
 /**
  * Guarda (crea o edita) una propiedad asignada al agente
  */
-export async function guardarPropiedadAgente(propiedadData, agenteId) {
-  const todas = await obtenerTodasLasPropiedades()
-  const sesion = obtenerSesion()
-  const idAgente = agenteId || sesion?.id || 'usr-4'
+export async function guardarPropiedadAgente(propiedadFormData) {
+  const id = propiedadFormData.get('id');
+  const esEdicion = Boolean(id);
 
-  let propiedadesActualizadas = []
-  let propiedadGuardada = null
+  const url = esEdicion ? `${URL_BASE}/inmuebles/${id}` : `${URL_BASE}/inmuebles`;
+  const method = esEdicion ? 'PUT' : 'POST';
 
-  if (propiedadData.id) {
-    // Edición
-    propiedadesActualizadas = todas.map((p) => {
-      if (String(p.id) === String(propiedadData.id)) {
-        propiedadGuardada = {
-          ...p,
-          ...propiedadData,
-          precio: Number(propiedadData.precio) || 0,
-          amb: Number(propiedadData.amb) || 1,
-          banos: Number(propiedadData.banos) || 1,
-          m2: Number(propiedadData.m2) || 0,
-        }
-        return propiedadGuardada
-      }
-      return p
-    })
-  } else {
-    // Alta / Captación
-    const nuevoId = todas.length > 0 ? Math.max(...todas.map((p) => Number(p.id) || 0)) + 1 : 1
-    propiedadGuardada = {
-      ...propiedadData,
-      id: nuevoId,
-      agenteId: idAgente,
-      estado: propiedadData.estado || 'disponible',
-      precio: Number(propiedadData.precio) || 0,
-      amb: Number(propiedadData.amb) || 1,
-      banos: Number(propiedadData.banos) || 1,
-      m2: Number(propiedadData.m2) || 0,
-      img: propiedadData.img?.trim() || '/img/propiedades/prop1.jpg',
-      clienteId: null,
-      propietarioId: propiedadData.propietarioId || sesion?.id || 'usr-2',
-    }
-    propiedadesActualizadas = [propiedadGuardada, ...todas]
-  }
+  const res = await fetch(url, {
+    method,
+    headers: {
+      ...obtenerHeadersAuth(),
+    },
+    body: propiedadFormData,
+  });
 
-  guardarPropiedadesLocal(propiedadesActualizadas)
-  return propiedadGuardada
+  const datos = await res.json();
+  if (!res.ok) throw new Error(datos.error || 'Error al guardar el inmueble');
+  return datos;
 }
 
 /**
- * Modificación inmediata de estado de una propiedad
+ * Obtiene la lista de propietarios para el selector del modal
+ * AJUSTAR CUANDO ESTE LISTO LO DE AUTH POR AHORA NO ANDA
  */
-export async function cambiarEstadoPropiedad(propiedadId, nuevoEstado) {
-  const todas = await obtenerTodasLasPropiedades()
-  const actualizadas = todas.map((p) => {
-    if (String(p.id) === String(propiedadId)) {
-      return { ...p, estado: nuevoEstado }
-    }
-    return p
-  })
-
-  guardarPropiedadesLocal(actualizadas)
-  return actualizadas.find((p) => String(p.id) === String(propiedadId))
+export async function obtenerPropietarios() {
+  try {
+    const res = await fetch(`${URL_BASE}/usuarios`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...obtenerHeadersAuth(),
+      },
+    })
+    if (!res.ok) throw new Error('Error al obtener la lista de propietarios')
+    const datos = await res.json()
+    const lista = Array.isArray(datos) ? datos : datos.usuarios || []
+    return lista.filter((u) => u.rol === 'propietario')
+  } catch (err) {
+    console.error('Error al obtener propietarios:', err)
+    return []
+  }
 }
 
 /**
  * Eliminación de una propiedad asignada
  */
 export async function eliminarPropiedadAgente(propiedadId) {
-  const todas = await obtenerTodasLasPropiedades()
-  const filtradas = todas.filter((p) => String(p.id) !== String(propiedadId))
-  guardarPropiedadesLocal(filtradas)
+  const res = await fetch(`${URL_BASE}/inmuebles/${propiedadId}`, {
+    method: 'DELETE',
+    headers: obtenerHeadersAuth(),
+  })
+
+  if (!res.ok) {
+    const datos = await res.json().catch(() => ({}))
+    throw new Error(datos.error || 'Error al eliminar la propiedad')
+  }
+
   return true
+}
+
+/**
+ * Reactiva una propiedad previamente inhabilitada
+ */
+export async function activarPropiedadAgente(propiedadId) {
+  const res = await fetch(`${URL_BASE}/inmuebles/${propiedadId}/activar`, {
+    method: 'PATCH',
+    headers: obtenerHeadersAuth(),
+  })
+
+  if (!res.ok) {
+    const datos = await res.json().catch(() => ({}))
+    throw new Error(datos.error || 'Error al activar la propiedad')
+  }
+
+  return true
+}
+
+export async function eliminarImagenPropiedad(imagenId) {
+  const res = await fetch(`${URL_BASE}/inmuebles/imagenes/${imagenId}`, {
+    method: 'DELETE',
+    headers: obtenerHeadersAuth(),
+  });
+
+  if (!res.ok) {
+    const datos = await res.json().catch(() => ({}));
+    throw new Error(datos.error || 'Error al eliminar la imagen');
+  }
+
+  return true;
 }
 
 // --- AGENDA Y GESTIÓN DE CITAS ---
@@ -155,7 +164,7 @@ export async function obtenerTodasLasCitas() {
   }
 
   try {
-    const res = await fetch(`${URL_BASE}/citas.json`)
+    const res = await fetch(`${URL_BASE2}/citas.json`)
     if (res.ok) {
       const citasBase = await res.json()
       guardarCitasLocal(citasBase)

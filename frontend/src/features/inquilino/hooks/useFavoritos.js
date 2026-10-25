@@ -1,25 +1,33 @@
 import { useState, useEffect } from "react";
 import { obtenerFavoritos } from "../services/favoritosService";
-import { obtenerPropiedadesDisponibles } from "../../inmuebles/services/inmueblesService";
-import { useFetch } from "../../../shared/hooks/useFetch";
 
 export function useFavoritos() {
-  const { datos: respuesta = [], cargando, error } = useFetch(obtenerPropiedadesDisponibles);
-  const [idsFavoritos, setIdsFavoritos] = useState([]);
+  const [favoritos, setFavoritos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-  const actualizarIds = () => {
-    const ids = (obtenerFavoritos() || []).map((id) => String(id));
-    setIdsFavoritos(ids);
+  const cargarFavoritos = async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const datos = await obtenerFavoritos();
+      setFavoritos(datos);
+
+    } catch (err) {
+      console.error("Error al cargar favoritos:", err);
+      setError(err.message || "No se pudieron obtener los favoritos");
+
+    } finally {
+      setCargando(false);
+    }
   };
 
   useEffect(() => {
-    actualizarIds();
-    window.addEventListener("favoritosUpdated", actualizarIds);
-    return () => window.removeEventListener("favoritosUpdated", actualizarIds);
+    cargarFavoritos();
+    //para escuchar si el usuario agrega o quita alguno
+    window.addEventListener("favoritosUpdated", cargarFavoritos);
+    return () => window.removeEventListener("favoritosUpdated", cargarFavoritos);
   }, []);
-
-  const todas = Array.isArray(respuesta) ? respuesta : respuesta?.propiedades || respuesta?.data || [];
-  const favoritos = todas.filter((prop) => idsFavoritos.includes(String(prop?.id)));
 
   return {
     favoritos,

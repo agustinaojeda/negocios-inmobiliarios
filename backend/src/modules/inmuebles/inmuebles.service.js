@@ -1,9 +1,12 @@
 //valida los datos y si necesita algo de info lo llama al repository
+import { error } from "console";
 import { errorHandler } from "../../shared/middlewares/errorHandler.js";
 import * as repository from "./inmuebles.repository.js";
+import fs from "fs/promises";
+import path from "path";
 
-export const listar = async (filtros, esAgente = false) => {
-  const propiedades = await repository.listar(filtros, esAgente);
+export const listar = async (filtros, esAgente = false, agenteId = null) => {
+  const propiedades = await repository.listar(filtros, esAgente, agenteId);
 
   if (!propiedades || propiedades.length === 0) {
     return [];
@@ -33,8 +36,9 @@ export const obtener = async (id, esAgente = false) => {
 
 export const crear = async (datos, id) => {
   const errorValidacion = validar(datos);
-  if (errorValidacion) {
-    return errorValidacion;
+  const errorImg = validarImg(datos);
+  if (errorValidacion || errorImg) {
+    return errorValidacion || errorImg;
   }
 
   const { propietario_id, imagenes } = datos;
@@ -113,17 +117,32 @@ export const actualizar = async (id, datos, agenteId) => {
     await repository.registrarHistorialPrecio(id, precioAnterior, precioNuevo);
   }
 
-  let imagenesGuardadas = [];
   if (imagenes && imagenes.length > 0) {
-    await repository.eliminarImagenes(id);
-    imagenesGuardadas = await repository.guardarImagenes(id, imagenes);
-  } else {
-    imagenesGuardadas = await repository.obtenerImagenes(id);
+    const imagenesExistentes = await repository.obtenerImagenes(id);
+    const totalImagenes = imagenesExistentes.length + imagenes.length;
+
+    if (totalImagenes > 10) {
+      return {error : `El inmueble no puede tener más de 10 imágenes (actuales: ${imagenesExistentes.length}, intentás agregar: ${imagenes.length})` };
+    }
+    const ultimoOrden = imagenesExistentes.length;
+
+    const imagenesNuevasConOrden = imagenes.map((img, idx) => {
+      const url = typeof img === "string" ? img : img.url;
+      return {
+        url,
+        orden: ultimoOrden + idx + 1,
+        es_principal: ultimoOrden === 0 && idx === 0,
+      };
+    });
+
+    await repository.guardarImagenes(id, imagenesNuevasConOrden);
   }
+
+  const imagenesTotales = await repository.obtenerImagenes(id);
 
   return {
     ...propiedadActualizada,
-    imagenes: imagenesGuardadas,
+    imagenes: imagenesTotales,
   };
 };
 
@@ -192,6 +211,28 @@ export const obtenerHistorialPrecios = async (id, usuario) => {
   };
 };
 
+//imagenes
+export const eliminarImagen = async (imagenId) => {
+  const imagen = await repository.obtenerImagenPorId(imagenId);
+
+  if (!imagen) {
+    const error = new Error("Imagen no encontrada");
+    error.status = 404;
+    throw error;
+  }
+
+  //se elimina de la bd
+  await repository.eliminarImagen(imagenId);
+
+  //y de la carpeta
+  if (imagen.url) {
+    const rutaFisica = path.join(process.cwd(), "public", imagen.url);
+    await fs.unlink(rutaFisica).catch(() => {});
+  }
+
+  return true;
+};
+
 //validacion
 function validar(datos) {
   const {
@@ -205,7 +246,6 @@ function validar(datos) {
     banos,
     m2,
     estado_comercial,
-    imagenes,
   } = datos;
 
   if (
@@ -231,11 +271,18 @@ function validar(datos) {
     return { error: "El precio y los metros cuadrados deben ser mayores a 0" };
   }
 
+  return null;
+}
+function validarImg(datos) {
+  const { imagenes } = datos;
   if (!imagenes || imagenes.length === 0) {
     return {
       error: "Debe adjuntar al menos una imagen para publicar la propiedad",
     };
+  } else if(imagenes.length >= 10){
+    return {
+      error: "El maximo permitido son 10 imágenes."
+    }
   }
-
   return null;
 }

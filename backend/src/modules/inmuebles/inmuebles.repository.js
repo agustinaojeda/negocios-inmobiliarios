@@ -1,22 +1,11 @@
 //el unico que puede hablar con la bd
 import { pool } from "../../config/db.js";
-import crypto from 'node:crypto';
 
 //imagenes
 
-const generarUrlUnica = (urlOriginal) => {
-  if (!urlOriginal) return '';
-  
-  const partes = urlOriginal.split('.');
-  const extension = partes.length > 1 ? partes.pop() : 'jpg';
-  
-  const uuidUnico = crypto.randomUUID();
-
-  return `/img/propiedades/prop_${uuidUnico}.${extension}`;
-};
-
 export const obtenerImagenes = async (ids) => {
-  if (!ids || ids.length === 0) return [];
+  const listaIds = Array.isArray(ids) ? ids : [ids];
+  if (!listaIds || listaIds.length === 0) return [];
 
   const query = `
     SELECT id, propiedad_id, url, orden, es_principal
@@ -25,7 +14,7 @@ export const obtenerImagenes = async (ids) => {
     ORDER BY orden ASC;
   `;
 
-  const { rows } = await pool.query(query, [ids]);
+  const { rows } = await pool.query(query, [listaIds]);
   return rows;
 };
 
@@ -36,16 +25,15 @@ export const guardarImagenes = async (id, imagenes) => {
     const query = `INSERT INTO imagenes_propiedades (propiedad_id, url, orden, es_principal)
         VALUES ($1, $2, $3, $4)
         RETURNING *;`;
-        
-    //const urlOriginal = typeof imagenes[i] === "string" ? imagenes[i] : imagenes[i].url;
-    //const url = generarUrlUnica(urlOriginal);
-    const url = generarUrlUnica(imagenes[i].url);
+
+    const url = typeof imagenes[i] === "string" ? imagenes[i] : imagenes[i].url;
+    if (!url) continue;
 
     const orden = imagenes[i].orden || i + 1;
     const esPrincipal =
       imagenes[i].es_principal !== undefined
         ? imagenes[i].es_principal
-        : i === 0; //si no esta definido, entonces la primer foto es la principal
+        : i === 0; //la primer foto es la principal
 
     const values = [id, url, orden, esPrincipal];
     const { rows } = await pool.query(query, values);
@@ -60,13 +48,39 @@ export const eliminarImagenes = async (propiedadId) => {
   await pool.query(query, [propiedadId]);
 };
 
+export const obtenerImagenPorId = async (imagenId) => {
+  const query = `SELECT id, propiedad_id, url, orden, es_principal
+    FROM imagenes_propiedades
+    WHERE id = $1;
+  `;
+  const { rows } = await pool.query(query, [imagenId]);
+  return rows[0] || null;
+};
+
+export const eliminarImagen = async (imagenId) => {
+  const query = `DELETE FROM imagenes_propiedades
+    WHERE id = $1
+    RETURNING *;
+  `;
+  const { rows } = await pool.query(query, [imagenId]);
+  return rows[0];
+};
+
 //historial precios
-export const registrarHistorialPrecio = async (propiedadId, precioAnterior, precioNuevo) => {
+export const registrarHistorialPrecio = async (
+  propiedadId,
+  precioAnterior,
+  precioNuevo,
+) => {
   const query = `INSERT INTO historial_precios (propiedad_id, precio_anterior, precio_nuevo, fecha_cambio)
     VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
     RETURNING *;
   `;
-  const { rows } = await pool.query(query, [propiedadId, precioAnterior, precioNuevo]);
+  const { rows } = await pool.query(query, [
+    propiedadId,
+    precioAnterior,
+    precioNuevo,
+  ]);
   return rows[0];
 };
 
@@ -82,20 +96,30 @@ export const obtenerHistorialPrecios = async (propiedadId) => {
 
 //propiedades
 
-export const listar = async (filtros = {}, incluirInactivas = false) => {
-  const { categoria, zona, estado_comercial } = filtros;
+export const listar = async (
+  filtros = {},
+  incluirInactivas = false,
+  agenteId = null,
+) => {
+  const { categoria, zona, estado_comercial, estado_visibilidad } = filtros;
 
-  let query = `
-    SELECT id, titulo, descripcion, categoria, moneda, precio, expensas, zona, direccion, ambientes, banos, m2, estado_comercial, estado_visibilidad
+  let query = `SELECT id, propietario_id, agente_id, titulo, descripcion, categoria, moneda, precio, expensas, zona, direccion, ambientes, banos, m2, estado_comercial, estado_visibilidad, fecha_creacion, fecha_actualizacion
     FROM propiedades
     WHERE 1=1
   `;
 
   const values = [];
 
+  //si no es agente solo ve las activas
   if (!incluirInactivas) {
     values.push("activo");
     query += ` AND estado_visibilidad = $${values.length}`;
+  }
+
+  //si es un agente filtra las que son de el
+  if (agenteId) {
+    values.push(agenteId);
+    query += ` AND agente_id = $${values.length}`;
   }
 
   //filtros
@@ -110,6 +134,10 @@ export const listar = async (filtros = {}, incluirInactivas = false) => {
   if (estado_comercial) {
     values.push(estado_comercial);
     query += ` AND estado_comercial = $${values.length}`;
+  }
+  if (estado_visibilidad) {
+    values.push(estado_visibilidad);
+    query += ` AND estado_visibilidad = $${values.length}`;
   }
 
   query += ` ORDER BY fecha_actualizacion DESC;`;

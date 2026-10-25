@@ -7,26 +7,29 @@ import { Link } from "react-router";
 import React, { useState, useEffect, useRef } from "react";
 import { formatearPrecio, capitalizar } from "../../utils/formato";
 import {
-  esFavorito,
-  toggleFavorito,
+  agregarFavorito,
+  eliminarFavorito,
 } from "../../../features/inquilino/services/favoritosService";
+import { obtenerSesion } from "../../../features/auth/services/authService";
 
 export default function PropertyCard({ property, cita, esAsignado = false }) {
-  const cardRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const sesion = obtenerSesion();
+  const usuario = sesion?.usuario || sesion;
+  const esInquilino =
+    usuario && (usuario.rol === "inquilino" || usuario.rol_id === 3);
 
   // Si viene una cita, la propiedad está adentro de 'cita.propiedad'. Si no, usa 'property'.
   const propData = property || cita?.propiedad;
   const esCita = Boolean(cita);
   const esAlquiler = propData?.tipo === "alquiler";
 
-  // Cargar estado inicial de favorito (solo para modo propiedad normal, no en citas ni asignados)
+  const cardRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(propData?.es_favorito || false);
+
   useEffect(() => {
-    if (!esCita && !esAsignado && propData?.id) {
-      setIsFavorite(esFavorito(propData.id));
-    }
-  }, [propData?.id, esCita, esAsignado]);
+    setIsFavorite(propData?.es_favorito || false);
+  }, [propData?.es_favorito]);
 
   // Animación de aparición (Scroll Reveal)
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
     );
 
     if (cardRef.current) {
@@ -47,14 +50,26 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
     return () => observer.disconnect();
   }, []);
 
-  const handleFavoriteClick = (e) => {
+  const handleFavoriteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!propData?.id) return;
 
-    const nuevoEstado = toggleFavorito(propData.id);
-    setIsFavorite(nuevoEstado);
+    const estadoAnterior = isFavorite;
+    setIsFavorite(!estadoAnterior);
+
+    try {
+      if (estadoAnterior) {
+        await eliminarFavorito(propData.id);
+      } else {
+        await agregarFavorito(propData.id);
+      }
+      window.dispatchEvent(new Event("favoritosUpdated"));
+    } catch (err) {
+      console.error("Error al actualizar favorito:", err);
+      setIsFavorite(estadoAnterior); //si falla el servidor no paso nada se quita el fav
+    }
   };
 
   if (!propData) return null;
@@ -68,7 +83,10 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
   };
 
   return (
-    <Link to={`/inmueble/${propData.id}`} className="text-decoration-none h-100 d-block">
+    <Link
+      to={`/inmueble/${propData.id}`}
+      className="text-decoration-none h-100 d-block"
+    >
       <article
         ref={cardRef}
         className={`property-card h-100 d-flex flex-column reveal reveal-delay-1 ${
@@ -78,7 +96,7 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
         {/* IMAGEN + BADGE / CORAZÓN */}
         <div className="card-image-wrap position-relative">
           <img
-            src={propData.img}
+            src={propData.img || propData.imagenes?.[0]?.url}
             alt={propData.titulo}
             loading="lazy"
             width="400"
@@ -89,7 +107,8 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
             /* 1. Badge de estado para CITAS */
             <span
               className={`badge rounded-pill position-absolute top-0 end-0 m-3 px-3 py-2 text-capitalize fw-semibold ${
-                citaBadgeStyles[cita.estado?.toLowerCase()] || "bg-primary text-white"
+                citaBadgeStyles[cita.estado?.toLowerCase()] ||
+                "bg-primary text-white"
               }`}
               style={{ fontSize: "0.75rem", letterSpacing: "0.5px" }}
             >
@@ -108,42 +127,44 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
           ) : (
             /* 3. Botón Corazón + Tag de Tipo para PROPIEDADES NORMALES */
             <>
-              <button
-                className={`card-favorite ${isFavorite ? "active" : ""}`}
-                onClick={handleFavoriteClick}
-                aria-label="Guardar en favoritos"
-                aria-pressed={isFavorite}
-              >
-                {isFavorite ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                )}
-              </button>
+              {esInquilino && (
+                <button
+                  className={`card-favorite ${isFavorite ? "active" : ""}`}
+                  onClick={handleFavoriteClick}
+                  aria-label="Guardar en favoritos"
+                  aria-pressed={isFavorite}
+                >
+                  {isFavorite ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  )}
+                </button>
+              )}
 
               {propData.tipo && (
                 <span className="card-type">{capitalizar(propData.tipo)}</span>
@@ -184,7 +205,10 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
 
           {/* Nombre del Asesor (Solo si es un Inmueble Asignado) */}
           {esAsignado && (
-            <p className="card-agent text-muted small mt-1 mb-2 d-flex align-items-center gap-1" style={{ fontSize: "0.825rem" }}>
+            <p
+              className="card-agent text-muted small mt-1 mb-2 d-flex align-items-center gap-1"
+              style={{ fontSize: "0.825rem" }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="13"
@@ -199,7 +223,10 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              <span>Asesor: <strong>{propData.agenteNombre || "Sin asignar"}</strong></span>
+              <span>
+                Asesor:{" "}
+                <strong>{propData.agenteNombre || "Sin asignar"}</strong>
+              </span>
             </p>
           )}
 
@@ -220,7 +247,14 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -260,7 +294,8 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
                   >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
-                  </svg>Agente: {cita.agenteNombre}
+                  </svg>
+                  Agente: {cita.agenteNombre}
                 </div>
 
                 <div className="card-feature text-truncate" title="Agente">
@@ -277,7 +312,8 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
                   >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
-                  </svg>Cliente: {cita.clienteNombre}
+                  </svg>
+                  Cliente: {cita.clienteNombre}
                 </div>
               </>
             ) : (

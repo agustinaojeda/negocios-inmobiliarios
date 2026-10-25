@@ -11,16 +11,18 @@ export const listar = async (req, res, next) => {
   }
 };
 
-export const listarPanel = async (req, res, next) => {
-  try {//prop activas e inactivas
+export const listarPanel = async (req, res, next) => {//todas las prop asignadas a un agente
+  try {
     const filtros = req.query;
-    const propiedades = await service.listar(filtros, true);
+    const agenteId = req.usuario.id; 
+
+    const propiedades = await service.listar(filtros, true, agenteId);
+
     return res.status(200).json(propiedades);
   } catch (err) {
     next(err);
   }
 };
-
 export const obtener = async (req, res, next) => {
   try {//detalle prop act
     const { id } = req.params;
@@ -57,6 +59,22 @@ export const crear = async (req, res, next) => {
   try {
     const agenteId = req.usuario.id;
 
+    //procesar fotos subidas
+    let imagenes = [];
+    if (req.files && req.files.length > 0) {
+      imagenes = req.files.map((file, index) => ({//si subio varias
+        url: `/img/propiedades/${file.filename}`,
+        es_principal: index === 0,
+        orden: index + 1,
+      }));
+    } else if (req.file) {//si subio solo una
+      imagenes = [{
+        url: `/img/propiedades/${req.file.filename}`,
+        es_principal: true,
+        orden: 1,
+      }];
+    }
+
     const {
       propietario_id,
       titulo,
@@ -71,8 +89,7 @@ export const crear = async (req, res, next) => {
       banos,
       m2,
       estado_comercial,
-      estado_visibilidad,
-      imagenes,
+      estado_visibilidad
     } = req.body;
 
     const datosPropiedad = {
@@ -110,6 +127,19 @@ export const actualizar = async (req, res, next) => {
     const { id } = req.params;
     const agenteId = req.usuario.id;
 
+    let imagenesProcesadas = [];
+    if (req.files && req.files.length > 0) {
+      imagenesProcesadas = req.files.map((file, index) => ({
+        url: `/img/propiedades/${file.filename}`,
+        es_principal: index === 0,
+        orden: index + 1,
+      }));
+    } else if (req.body.imagenes) {
+      imagenesProcesadas = typeof req.body.imagenes === 'string'
+        ? JSON.parse(req.body.imagenes)
+        : req.body.imagenes;
+    }
+
     const {
       propietario_id,
       titulo,
@@ -124,8 +154,7 @@ export const actualizar = async (req, res, next) => {
       banos,
       m2,
       estado_comercial,
-      estado_visibilidad,
-      imagenes
+      estado_visibilidad
     } = req.body;
 
     const datosPropiedad = {
@@ -143,7 +172,7 @@ export const actualizar = async (req, res, next) => {
       m2,
       estado_comercial,
       estado_visibilidad,
-      imagenes
+      ...(imagenesProcesadas.length > 0 && { imagenes: imagenesProcesadas }),
     };
 
     const resultado = await service.actualizar(id, datosPropiedad, agenteId);
@@ -239,6 +268,19 @@ export const obtenerHistorial = async (req, res, next) => {
     }
 
     return res.status(200).json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};
+
+//imagen
+export const eliminarImagen = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await service.eliminarImagen(id);
+
+    return res.status(200).json({ mensaje: 'Imagen eliminada correctamente' });
   } catch (err) {
     next(err);
   }
