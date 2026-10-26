@@ -1,6 +1,33 @@
 import { useOutletContext } from 'react-router'
 import GestionUsuarios from '../components/GestionUsuarios'
 import GestionInmuebles from '../components/GestionInmuebles'
+import { useFetch } from '../../../shared/hooks/useFetch'
+import { listarUsuarios } from '../../../shared/services/usuariosService'
+
+// Tarjeta con la cantidad real de usuarios (GET /api/usuarios)
+function TarjetaUsuarios() {
+  const { datos: usuarios, cargando, error } = useFetch(listarUsuarios)
+  const total = usuarios?.length ?? 0
+  const activos = usuarios?.filter((u) => u.estaActivo).length ?? 0
+
+  return (
+    <div className="p-3 rounded-4 bg-light border-0">
+      <div className="small text-muted mb-1">Usuarios Registrados</div>
+      {cargando ? (
+        <div className="spinner-border spinner-border-sm text-secondary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      ) : error ? (
+        <div className="small text-danger">No disponible</div>
+      ) : (
+        <>
+          <div className="h4 fw-bold mb-0 text-dark">{total}</div>
+          <div className="small text-muted">{activos} activos</div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function AdminPage() {
   const { seccionActiva, sesion } = useOutletContext()
@@ -17,10 +44,7 @@ export default function AdminPage() {
           </p>
           <div className="row g-3 mt-2">
             <div className="col-md-4">
-              <div className="p-3 rounded-4 bg-light border-0">
-                <div className="small text-muted mb-1">Usuarios Registrados</div>
-                <div className="h4 fw-bold mb-0 text-dark">4</div>
-              </div>
+              <TarjetaUsuarios />
             </div>
             <div className="col-md-4">
               <div className="p-3 rounded-4 bg-light border-0">

@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import FormInput from "./FormInput";
-import { cambiarPassword } from "../../../features/auth/services/authService";
+import Alerta from "./Alerta";
+import { useAlerta } from "../../hooks/useAlerta";
+import { cambiarPassword } from "../../services/usuariosService";
 import { esRequerido } from "../../utils/validaciones";
 
 function validar(valores) {
@@ -34,6 +36,7 @@ export default function Seguridad() {
 
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const { alerta, mostrarExito, mostrarError, cerrar } = useAlerta();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,9 +59,10 @@ export default function Seguridad() {
 
     try {
       setGuardando(true);
-      await cambiarPassword(formData.passwordActual, formData.passwordNueva);
+      // PATCH /api/usuarios/cambiar-password
+      const respuesta = await cambiarPassword(formData.passwordActual, formData.passwordNueva);
 
-      alert("¡Contraseña actualizada con éxito!");
+      mostrarExito(respuesta?.mensaje || "¡Contraseña actualizada con éxito!");
       setFormData({
         passwordActual: "",
         passwordNueva: "",
@@ -66,9 +70,12 @@ export default function Seguridad() {
       });
       setErrores({});
     } catch (err) {
-      setErrores({
-        passwordActual: err.message || "La contraseña actual es incorrecta.",
-      });
+      const mensaje = err.message || "No se pudo actualizar la contraseña.";
+      // 400 con contraseña actual incorrecta: se marca también el campo
+      if (err.status === 400 && /actual/i.test(mensaje)) {
+        setErrores({ passwordActual: mensaje });
+      }
+      mostrarError(mensaje);
     } finally {
       setGuardando(false);
     }
@@ -85,7 +92,9 @@ export default function Seguridad() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <Alerta alerta={alerta} onCerrar={cerrar} />
+
+      <form onSubmit={handleSubmit} noValidate>
         <div className="row g-3">
           <FormInput
             label="Contraseña actual"
@@ -123,6 +132,7 @@ export default function Seguridad() {
           <div className="col-12 mt-4 text-end">
             <button
               type="submit"
+              id="btn-actualizar-password"
               disabled={guardando}
               className="btn text-white rounded-pill px-4 fw-medium shadow-sm"
               style={{ backgroundColor: "#13284c" }}

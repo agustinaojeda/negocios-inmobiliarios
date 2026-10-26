@@ -54,7 +54,9 @@ async function request(method, endpoint, body, options = {}) {
 
   // Interceptor de request: headers por defecto + token si hay sesión activa
   const headers = { Accept: 'application/json', ...headersExtra }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  // FormData (subida de archivos): el navegador arma el Content-Type multipart con su boundary
+  const esFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  if (body !== undefined && !esFormData) headers['Content-Type'] = 'application/json'
 
   const token = obtenerToken()
   if (token) headers.Authorization = `Bearer ${token}`
@@ -65,7 +67,7 @@ async function request(method, endpoint, body, options = {}) {
       ...resto,
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : esFormData ? body : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, 'No se pudo conectar con el servidor')
@@ -107,6 +109,7 @@ export const apiClient = {
   get: (url, options) => request('GET', url, undefined, options),
   post: (url, body, options) => request('POST', url, body, options),
   put: (url, body, options) => request('PUT', url, body, options),
+  patch: (url, body, options) => request('PATCH', url, body, options),
   delete: (url, options) => request('DELETE', url, undefined, options),
 }
 
