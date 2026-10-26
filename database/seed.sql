@@ -9,12 +9,16 @@ INSERT INTO roles (id_rol, nombre, descripcion) VALUES
 
 SELECT setval(pg_get_serial_sequence('roles', 'id_rol'), MAX(id_rol)) FROM roles;
 
---usuarios
+--usuarios (contraseñas hasheadas con bcrypt, 10 rondas)
+-- admin@inmobiliaria.com       -> admin123
+-- propietario@inmobiliaria.com -> prop123
+-- inquilino@inmobiliaria.com   -> inq123
+-- agente@inmobiliaria.com      -> age123
 INSERT INTO usuarios (id, nombre, apellido, email, contrasena, telefono, foto_perfil) VALUES
-(1, 'Administrador', 'Principal', 'admin@inmobiliaria.com', 'admin123', '1144556677', 'https://ui-avatars.com/api/?name=Admin+Principal&background=13284c&color=fff'),
-(2, 'Carlos', 'Propietario', 'propietario@inmobiliaria.com', 'prop123', '1155667788', 'https://ui-avatars.com/api/?name=Carlos+Propietario&background=13284c&color=fff'),
-(3, 'Mariana', 'Inquilina', 'inquilino@inmobiliaria.com', 'inq123', '1166778899', 'https://ui-avatars.com/api/?name=Mariana+Inquilina&background=13284c&color=fff'),
-(4, 'Roberto', 'Agente', 'agente@inmobiliaria.com', 'age123', '1177889900', 'https://ui-avatars.com/api/?name=Roberto+Agente&background=13284c&color=fff');
+(1, 'Administrador', 'Principal', 'admin@inmobiliaria.com', '$2b$10$NSFOZmDjcYYYRPlVmQr99emVTrb9AI73wIlv6yT8R3sikAJUPLxiq', '1144556677', 'https://ui-avatars.com/api/?name=Admin+Principal&background=13284c&color=fff'),
+(2, 'Carlos', 'Propietario', 'propietario@inmobiliaria.com', '$2b$10$lA4i2xK9Yr9m9X7DwrY1EexM4Cq6u6Av3/LQA/M.///nSyBAZU4vS', '1155667788', 'https://ui-avatars.com/api/?name=Carlos+Propietario&background=13284c&color=fff'),
+(3, 'Mariana', 'Inquilina', 'inquilino@inmobiliaria.com', '$2b$10$pfModRZu8jhSWY8XkZgEhOtHKVbleXnf4D/pw8MH4Tn0Nd/XV4fJi', '1166778899', 'https://ui-avatars.com/api/?name=Mariana+Inquilina&background=13284c&color=fff'),
+(4, 'Roberto', 'Agente', 'agente@inmobiliaria.com', '$2b$10$MY49egz.ehu7YwR8Fs9Xqu8FdlCI.3.YMMv7Wx1iWuXaBD/dWn.t2', '1177889900', 'https://ui-avatars.com/api/?name=Roberto+Agente&background=13284c&color=fff');
 
 SELECT setval(pg_get_serial_sequence('usuarios', 'id'), MAX(id)) FROM usuarios;
 
