@@ -5,6 +5,7 @@ import authRoutes from './modules/auth/auth.routes.js';
 import inmueblesRoutes from './modules/inmuebles/inmuebles.routes.js';
 import favoritosRoutes from './modules/favoritos/favoritos.routes.js';
 import citasRoutes from './modules/citas/citas.routes.js';
+import usuariosRoutes from './modules/usuarios/usuarios.routes.js';
 import { notFound } from './shared/middlewares/notFound.js';
 import { errorHandler } from './shared/middlewares/errorHandler.js';
 
@@ -22,6 +23,8 @@ app.use('/api/inmuebles', inmueblesRoutes);
 app.use('/api/favoritos', favoritosRoutes);
 
 app.use('/api/citas', citasRoutes);
+
+app.use('/api/usuarios', usuariosRoutes);
 
 // Manejo de errores y 404
 app.use(notFound);
