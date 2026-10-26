@@ -22,7 +22,7 @@ function obtenerUsuariosRegistradosLocal() {
 export async function obtenerTodosLosUsuarios() {
   let usuariosBase = []
   try {
-    const respuesta = await fetch(`${URL_BASE}/usuarios.json`)
+    const respuesta = await fetch(`${URL_BASE}/usuarios`)
     if (respuesta.ok) {
       usuariosBase = await respuesta.json()
     }
