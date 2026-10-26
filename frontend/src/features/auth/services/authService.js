@@ -6,8 +6,8 @@ import {
   borrarSesion,
 } from '../../../shared/services/apiClient'
 
-// Mock local: solo lo siguen usando obtenerTodosLosUsuarios y cambiarPassword,
-// que todavía no tienen endpoint en el backend.
+// Mock local: solo lo sigue usando obtenerTodosLosUsuarios (propietario, agente, inmuebles).
+// El cambio de contraseña y el perfil usan la API real (shared/services/usuariosService.js).
 const URL_BASE = 'data'
 const CLAVE_USUARIOS_REGISTRADOS = 'negocios-inmobiliarios:usuarios_registrados'
 
@@ -163,40 +163,4 @@ export function redirigirSiHaySesion() {
     throw redirect(obtenerRutaPorRol(sesion.rol))
   }
   return null
-}
-
-export async function cambiarPassword(passwordActual, passwordNueva) {
-  const sesion = obtenerSesion();
-  if (!sesion) {
-    throw new Error('No hay una sesión activa.');
-  }
-
-  //obtenemos todos los usuarios
-  const usuarios = await obtenerTodosLosUsuarios();
-  const usuarioEncontrado = usuarios.find(
-    (u) => u.email.toLowerCase() === sesion.email.toLowerCase()
-  );
-
-  //verificar que la contra que puso es la que tiene
-  if (!usuarioEncontrado || usuarioEncontrado.password !== passwordActual) {
-    throw new Error('La contraseña actual es incorrecta.');
-  }
-
-  //actualizar cambios
-  const registrados = obtenerUsuariosRegistradosLocal();
-  const indice = registrados.findIndex(
-    (u) => u.email.toLowerCase() === sesion.email.toLowerCase()
-  );
-
-  if (indice !== -1) {
-    registrados[indice].password = passwordNueva;
-  } else {
-    registrados.push({
-      ...usuarioEncontrado,
-      password: passwordNueva,
-    });
-  }
-
-  localStorage.setItem(CLAVE_USUARIOS_REGISTRADOS, JSON.stringify(registrados));
-  return true;
-}
+}

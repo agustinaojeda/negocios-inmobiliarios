@@ -1,10 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import FormInput from "./FormInput";
-import {
-  obtenerSesion,
-  actualizarSesion,
-} from "../../../features/auth/services/authService";
-import { esRequerido, esEmailValido, esTelefonoValido } from "../../utils/validaciones";
+import Alerta from "./Alerta";
+import Spinner from "../Spinner";
+import MensajeVacio from "../MensajeVacio";
+import { useFetch } from "../../hooks/useFetch";
+import { useAlerta } from "../../hooks/useAlerta";
+import { obtenerMiPerfil, actualizarMiPerfil } from "../../services/usuariosService";
+import { resolverUrlImagen } from "../../config/api";
+import { esRequerido, esTelefonoValido } from "../../utils/validaciones";
+
+const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024; // mismo límite que el backend (multer)
 
 function validar(valores) {
   const errores = {};
@@ -13,10 +18,8 @@ function validar(valores) {
     errores.nombre = "El nombre es obligatorio.";
   }
 
-  if (!esRequerido(valores.email)) {
-    errores.email = "El email es obligatorio.";
-  } else if (!esEmailValido(valores.email)) {
-    errores.email = "El formato del email no es válido.";
+  if (!esRequerido(valores.apellido)) {
+    errores.apellido = "El apellido es obligatorio.";
   }
 
   if (!esRequerido(valores.telefono)) {
@@ -30,25 +33,51 @@ function validar(valores) {
   return errores;
 }
 
+//genera la foto por defecto
+const avatarDefecto = (nombre) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    nombre || "Usuario",
+  )}&background=13284c&color=fff`;
+
+// Carga el perfil real desde GET /api/usuarios/perfil y recién ahí muestra el formulario
 export default function InformacionContacto() {
-  const sesionActual = obtenerSesion();
+  const { datos: perfil, cargando, error } = useFetch(obtenerMiPerfil);
 
-  //genera la foto por defecto
-  const avatarDefecto = (nombre) =>
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      nombre || "Usuario",
-    )}&background=13284c&color=fff`;
+  if (cargando) return <Spinner texto="Cargando tu información..." />;
+  if (error) {
+    return (
+      <MensajeVacio titulo="No pudimos cargar tu información" texto={error.message} />
+    );
+  }
 
+  return <FormularioContacto perfil={perfil} />;
+}
+
+function FormularioContacto({ perfil }) {
   const [formData, setFormData] = useState({
-    nombre: sesionActual?.nombre || "",
-    email: sesionActual?.email || "",
-    telefono: sesionActual?.telefono || "",
-    fotoPerfil: sesionActual?.fotoPerfil || avatarDefecto(sesionActual?.nombre),
+    nombre: perfil?.nombre || "",
+    apellido: perfil?.apellido || "",
+    email: perfil?.email || "",
+    telefono: perfil?.telefono || "",
   });
+  const [fotoGuardada, setFotoGuardada] = useState(perfil?.fotoPerfil || null);
+  const [fotoNueva, setFotoNueva] = useState(null); // File elegido y todavía no guardado
+  const [errores, setErrores] = useState({});
+  const [guardando, setGuardando] = useState(false);
+  const { alerta, mostrarExito, mostrarError, cerrar } = useAlerta();
 
   const fileInputRef = useRef(null);
 
-  const [errores, setErrores] = useState({});
+  // Vista previa local de la foto elegida (se libera al cambiarla o desmontar)
+  const previewUrl = useMemo(
+    () => (fotoNueva ? URL.createObjectURL(fotoNueva) : null),
+    [fotoNueva],
+  );
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,33 +88,31 @@ export default function InformacionContacto() {
     }
   };
 
-  //convierte la foto a base64 para guardarla
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("La imagen no debe superar los 2MB.");
+    if (!file.type.startsWith("image/")) {
+      mostrarError("El archivo seleccionado no es una imagen.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData((prev) => ({ ...prev, fotoPerfil: reader.result }));
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
+    if (file.size > TAMANO_MAXIMO_FOTO) {
+      mostrarError("La imagen no debe superar los 5MB.");
+      return;
+    }
+    setFotoNueva(file);
   };
 
-  //quitar la foto actual y restaurar la por defecto
+  //descarta la foto elegida y vuelve a la guardada
   const handleQuitarFoto = () => {
-    const fotoPorDefecto = avatarDefecto(formData.nombre);
-    setFormData((prev) => ({ ...prev, fotoPerfil: fotoPorDefecto }));
+    setFotoNueva(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const erroresDetectados = validar(formData);
@@ -94,18 +121,36 @@ export default function InformacionContacto() {
       return;
     }
 
-    const datosAGuardar = {
-      ...formData,
-      fotoPerfil: formData.fotoPerfil || avatarDefecto(formData.nombre),
-    };
+    try {
+      setGuardando(true);
+      const usuario = await actualizarMiPerfil({
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        foto: fotoNueva,
+      });
 
-    actualizarSesion(datosAGuardar);
-    setErrores({});
-    alert("¡Información guardada con éxito!");
+      setFormData((prev) => ({
+        ...prev,
+        nombre: usuario.nombre || "",
+        apellido: usuario.apellido || "",
+        telefono: usuario.telefono || "",
+      }));
+      setFotoGuardada(usuario.fotoPerfil || null);
+      setFotoNueva(null);
+      setErrores({});
+      mostrarExito("¡Información guardada con éxito!");
+    } catch (err) {
+      mostrarError(err.message || "No se pudo guardar la información.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  const esFotoPersonalizada =
-    formData.fotoPerfil && !formData.fotoPerfil.includes("ui-avatars.com");
+  const fotoMostrada =
+    previewUrl ||
+    resolverUrlImagen(fotoGuardada) ||
+    avatarDefecto(`${formData.nombre} ${formData.apellido}`.trim());
 
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
@@ -118,11 +163,13 @@ export default function InformacionContacto() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <Alerta alerta={alerta} onCerrar={cerrar} />
+
+      <form onSubmit={handleSubmit} noValidate>
         {/* SECCION FOTO DE PERFIL */}
         <div className="d-flex flex-column align-items-center text-center gap-3 mb-4 pb-3 border-bottom">
           <img
-            src={formData.fotoPerfil || avatarDefecto(formData.nombre)}
+            src={fotoMostrada}
             alt="Foto de perfil"
             className="rounded-circle shadow-sm"
             style={{
@@ -136,18 +183,22 @@ export default function InformacionContacto() {
             <div className="d-flex gap-2 justify-content-center">
               <button
                 type="button"
+                id="btn-cambiar-foto"
                 className="btn btn-sm btn-outline-secondary rounded-pill px-3"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={guardando}
               >
                 Cambiar foto
               </button>
 
-              {/**si la foto es personalizada muestra la opcion de quitarla */}
-              {esFotoPersonalizada && (
+              {/**si hay una foto elegida sin guardar muestra la opcion de descartarla */}
+              {fotoNueva && (
                 <button
                   type="button"
+                  id="btn-quitar-foto"
                   className="btn btn-sm btn-outline-danger rounded-pill px-3"
                   onClick={handleQuitarFoto}
+                  disabled={guardando}
                 >
                   Quitar foto
                 </button>
@@ -162,7 +213,9 @@ export default function InformacionContacto() {
               className="d-none"
             />
             <span className="text-muted d-block small mt-2">
-              JPG, PNG o WEBP. Máximo 2MB.
+              {fotoNueva
+                ? "Guardá los cambios para aplicar la nueva foto."
+                : "JPG, PNG o WEBP. Máximo 5MB."}
             </span>
           </div>
         </div>
@@ -170,7 +223,7 @@ export default function InformacionContacto() {
         {/* CAMPOS DEL FORMULARIO */}
         <div className="row g-3">
           <FormInput
-            label="Nombre y Apellido"
+            label="Nombre"
             name="nombre"
             value={formData.nombre}
             onChange={handleChange}
@@ -180,13 +233,22 @@ export default function InformacionContacto() {
           />
 
           <FormInput
+            label="Apellido"
+            name="apellido"
+            value={formData.apellido}
+            onChange={handleChange}
+            error={errores.apellido}
+            required
+            className="col-md-6"
+          />
+
+          <FormInput
             label="Correo Electrónico"
             type="email"
             name="email"
             value={formData.email}
-            error={errores.email}
-            onChange={handleChange}
-            required
+            disabled
+            hint="El correo electrónico no se puede modificar."
             className="col-md-6"
           />
 
@@ -204,10 +266,12 @@ export default function InformacionContacto() {
           <div className="col-12 mt-4 text-end">
             <button
               type="submit"
+              id="btn-guardar-contacto"
+              disabled={guardando}
               className="btn text-white rounded-pill px-4 fw-medium shadow-sm"
               style={{ backgroundColor: "#13284c" }}
             >
-              Guardar cambios
+              {guardando ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
         </div>
