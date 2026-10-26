@@ -1,43 +1,49 @@
-import { obtenerSesion } from '../../auth/services/authService';
+import { obtenerSesion } from "../../auth/services/authService";
 
-const getStorageKey = () => { //usa el mail del usuario como clave
+const URL_BASE = "http://localhost:3000/api";
+
+function obtenerHeaders() {//como solo los inq pueden poner fav hace falta meter el header para verificar si de verdad se trata de un usuario inq
   const sesion = obtenerSesion();
-  return sesion?.email ? `favoritos_${sesion.email}` : null;
-};
+  const token = sesion?.token; //AJUSTAR SI HACE FALTA CUANDO ESTE LISTO LO DE AUTH !!! D:
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 //obtiene la lista de ids favoritos del usuario actual
-export function obtenerFavoritos() {
-  const key = getStorageKey();
-  if (!key) return [];
-  
-  const favs = localStorage.getItem(key);
-  return favs ? JSON.parse(favs) : [];
-}
-
-//verifica si una propiedad especifica es favorita
-export function esFavorito(propertyId) {
-  const favs = obtenerFavoritos();
-  return favs.includes(propertyId);
-}
-
-//agrega o saca una propiedad de favoritos y devuelve el nuevo estado
-export function toggleFavorito(propertyId) {
-  const key = getStorageKey();
-  if (!key) return false;
-
-  let favs = obtenerFavoritos();
-  const index = favs.indexOf(propertyId);
-
-  if (index >= 0) {
-    favs.splice(index, 1);
-  } else {
-    favs.push(propertyId);
+export async function obtenerFavoritos() {
+  const respuesta = await fetch(`${URL_BASE}/favoritos`, {
+    headers: obtenerHeaders(),
+  });
+  if (!respuesta.ok) {
+    throw new Error("No se pudieron obtener los favoritos");
   }
+  const datos = await respuesta.json();
+  return datos.favoritos || datos.datos || (Array.isArray(datos) ? datos : []);
+}
 
-  //a las propiedades fav las guarda en el localstorage
-  localStorage.setItem(key, JSON.stringify(favs));
+export async function agregarFavorito(id) {
+  const respuesta = await fetch(`${URL_BASE}/favoritos/${id}`, {
+    method: "POST",
+    headers: obtenerHeaders(),
+  });
+  if (!respuesta.ok) {
+    throw new Error("No se pudo agregar la propiedad a favoritos");
+  }
+  return respuesta.json();
+}
 
-  window.dispatchEvent(new Event('favoritosUpdated'));
-
-  return favs.includes(propertyId);
+export async function eliminarFavorito(id) {
+  const respuesta = await fetch(`${URL_BASE}/favoritos/${id}`, {
+    method: "DELETE",
+    headers: obtenerHeaders(),
+  });
+  if (!respuesta.ok && respuesta.status !== 204) {
+    throw new Error("No se pudo eliminar la propiedad de favoritos");
+  }
+  if (respuesta.status === 204) {
+    return true;
+  }
+  return respuesta.json();
 }

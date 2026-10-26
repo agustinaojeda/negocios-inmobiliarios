@@ -1,22 +1,17 @@
-import { formatearPrecio } from '../../utils/formato'
+import { formatearPrecio } from "../../utils/formato";
+import { obtenerUrlImagen } from "../../../shared/utils/imagenUrl";
 
 const CLASES_ESTADO = {
-  disponible: 'bg-success text-white',
-  reservado: 'bg-warning text-dark',
-  alquilado: 'bg-info text-dark',
-  vendido: 'bg-primary text-white',
-  pausado: 'bg-secondary text-white',
-}
+  activo: "bg-success text-white",
+  inactivo: "bg-secondary text-white",
+};
 
 export default function TablaGestionInmuebles({
   propiedades = [],
-  editableEstado = false,
-  onCambiarEstado,
   onEditar,
-  onEliminar,
-  textoBotonEliminar = 'Baja',
+  onAlternarEstado,
 }) {
-  if (!propiedades || propiedades.length === 0) return null
+  if (!propiedades || propiedades.length === 0) return null;
 
   return (
     <div className="table-responsive">
@@ -32,93 +27,95 @@ export default function TablaGestionInmuebles({
           </tr>
         </thead>
         <tbody>
-          {propiedades.map((p) => (
-            <tr key={p.id}>
-              {/* Foto + Título + Dirección */}
-              <td>
-                <div className="d-flex align-items-center gap-2">
-                  <img
-                    src={p.img || '/img/propiedades/prop1.jpg'}
-                    alt={p.titulo}
-                    className="rounded-3 object-fit-cover border"
-                    style={{ width: '45px', height: '45px' }}
-                    onError={(e) => {
-                      e.target.src = '/img/propiedades/prop1.jpg'
-                    }}
-                  />
-                  <div>
-                    <div className="fw-semibold text-truncate" style={{ maxWidth: '220px' }}>
-                      {p.titulo}
+          {propiedades.map((p) => {
+            const urlImagen =
+              p.imagenes && p.imagenes.length > 0 ? p.imagenes[0].url : p.img;
+
+            const estadoActual = p.estado_visibilidad || p.estado || "activo";
+            const tipoOperacion = p.estado_comercial || p.tipo || "venta";
+
+            return (
+              <tr key={p.id}>
+                {/* Foto + Título + Dirección */}
+                <td>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src={obtenerUrlImagen(urlImagen)}
+                      alt={p.titulo}
+                      className="rounded-3 object-fit-cover border"
+                      style={{ width: "45px", height: "45px" }}
+                      onError={(e) => {
+                        e.target.src = "/img/propiedades/prop1.jpg";
+                      }}
+                    />
+                    <div>
+                      <div
+                        className="fw-semibold text-truncate"
+                        style={{ maxWidth: "220px" }}
+                      >
+                        {p.titulo}
+                      </div>
+                      <small className="text-muted">{p.direccion}</small>
                     </div>
-                    <small className="text-muted">{p.direccion}</small>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              {/* Zona */}
-              <td>{p.zona}</td>
+                {/* Zona */}
+                <td>{p.zona}</td>
 
-              {/* Tipo / Categoría */}
-              <td>
-                <small className="text-capitalize">
-                  {p.categoria} ({p.tipo})
-                </small>
-              </td>
+                {/* Tipo / Categoría */}
+                <td>
+                  <small className="text-capitalize">
+                    {p.categoria} ({tipoOperacion})
+                  </small>
+                </td>
 
-              {/* Precio */}
-              <td className="fw-bold">{formatearPrecio(p.precio)}</td>
+                {/* Precio */}
+                <td className="fw-bold">
+                  {p.moneda == 'USD' ? formatearPrecio(p.precio)
+                    : formatearPrecio(p.precio, p.moneda)}
+                </td>
 
-              {/* Estado: Selector interactivo o Badge de lectura */}
-              <td>
-                {editableEstado ? (
-                  <select
-                    className={`form-select form-select-sm rounded-pill fw-semibold border-0 py-1 ps-2 pe-4 ${
-                      CLASES_ESTADO[p.estado] || 'bg-secondary text-white'
-                    }`}
-                    style={{ cursor: 'pointer', fontSize: '0.8rem' }}
-                    value={p.estado}
-                    onChange={(e) => onCambiarEstado?.(p.id, e.target.value)}
-                  >
-                    <option value="disponible">Disponible</option>
-                    <option value="reservado">Reservado</option>
-                    <option value="alquilado">Alquilado</option>
-                    <option value="vendido">Vendido</option>
-                    <option value="pausado">Pausado</option>
-                  </select>
-                ) : (
+                {/* Estado: Selector de Visibilidad o Badge */}
+                <td>
                   <span
-                    className={`badge rounded-pill ${
-                      CLASES_ESTADO[p.estado] || 'bg-secondary text-white'
+                    className={`badge rounded-pill px-3 py-1 text-capitalize ${
+                      CLASES_ESTADO[estadoActual] || "bg-secondary text-white"
                     }`}
+                    style={{ fontSize: "0.8rem", fontWeight: "500" }}
                   >
-                    {p.estado}
+                    {estadoActual}
                   </span>
-                )}
-              </td>
+                </td>
 
-              {/* Acciones */}
-              <td className="text-end">
-                {onEditar && (
-                  <button
-                    className="btn btn-sm btn-outline-primary rounded-pill px-2 me-1"
-                    onClick={() => onEditar(p)}
-                  >
-                    Editar
-                  </button>
-                )}
-                {onEliminar && (
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-2"
-                    onClick={() => onEliminar(p.id, p.titulo)}
-                  >
-                    {textoBotonEliminar}
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+                {/* Acciones */}
+                <td className="text-end">
+                  {onEditar && (
+                    <button
+                      className="btn btn-sm btn-outline-primary rounded-pill px-2 me-1"
+                      onClick={() => onEditar(p)}
+                    >
+                      Editar
+                    </button>
+                  )}
+                 {onAlternarEstado && (
+                    <button
+                      className={`btn btn-sm rounded-pill px-2 ${
+                        estadoActual === 'activo'
+                          ? 'btn-outline-danger'
+                          : 'btn-outline-success'
+                      }`}
+                      onClick={() => onAlternarEstado(p.id, p.titulo, estadoActual)}
+                    >
+                      {estadoActual === 'activo' ? 'Baja' : 'Alta'}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
-  )
+  );
 }

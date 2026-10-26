@@ -7,7 +7,7 @@ import { useCarteraInmuebles } from '../hooks/useCarteraInmuebles'
 import { FiltroPills } from '../../inmuebles'
 import './filtro-compacto.css'
 
-const ESTADOS_FILTRO = ['todas', 'disponible', 'reservado', 'alquilado', 'vendido']
+const ESTADOS_FILTRO = ['todas', 'activo', 'inactivo']
 
 export default function CarteraInmuebles({ agenteId }) {
   const {
@@ -21,14 +21,21 @@ export default function CarteraInmuebles({ agenteId }) {
     propiedadAEditar,
     cambiarEstado,
     guardarPropiedad,
-    eliminarPropiedad,
+    alternarEstadoPropiedad,
     abrirCrear,
     abrirEditar,
     cerrarModal,
   } = useCarteraInmuebles(agenteId)
 
   if (cargando) return <Spinner texto="Cargando cartera..." />
-  if (error) return <MensajeVacio titulo="Error al cargar cartera" texto={error.message || error} />
+  if (error) {
+    return (
+      <MensajeVacio
+        titulo="Error al cargar cartera"
+        texto={typeof error === 'string' ? error : error?.message || 'Ocurrió un error inesperado'}
+      />
+    )
+  }
 
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white position-relative">
@@ -56,7 +63,7 @@ export default function CarteraInmuebles({ agenteId }) {
       {/* Filtros rápidos con FiltroPills y estilo compacto */}
       <div className="filtro-compacto mb-3">
         <FiltroPills
-          titulo="Filtrar por estado:"
+          titulo="Filtrar por visibilidad:"
           opciones={ESTADOS_FILTRO}
           seleccionado={filtroEstado}
           onSeleccionar={setFiltroEstado}
@@ -68,9 +75,8 @@ export default function CarteraInmuebles({ agenteId }) {
         <TablaGestionInmuebles
           propiedades={propiedadesFiltradas}
           editableEstado={true}
-          onCambiarEstado={cambiarEstado}
           onEditar={abrirEditar}
-          onEliminar={eliminarPropiedad}
+          onAlternarEstado={alternarEstadoPropiedad}
           textoBotonEliminar="Baja"
         />
       ) : (
