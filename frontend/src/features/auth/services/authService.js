@@ -1,7 +1,14 @@
 import { redirect } from 'react-router'
+import {
+  apiClient,
+  obtenerSesionGuardada,
+  guardarSesion,
+  borrarSesion,
+} from '../../../shared/services/apiClient'
 
+// Mock local: solo lo siguen usando obtenerTodosLosUsuarios y cambiarPassword,
+// que todavía no tienen endpoint en el backend.
 const URL_BASE = 'data'
-const CLAVE_SESION = 'negocios-inmobiliarios:sesion'
 const CLAVE_USUARIOS_REGISTRADOS = 'negocios-inmobiliarios:usuarios_registrados'
 
 function obtenerUsuariosRegistradosLocal() {
@@ -36,76 +43,45 @@ export async function obtenerTodosLosUsuarios() {
   return Array.from(mapaUsuarios.values())
 }
 
-export async function registrarUsuario({ nombre, email, password, telefono, rol = 'inquilino' }) {
-  const emailLimpio = email.trim().toLowerCase()
-  const usuarios = await obtenerTodosLosUsuarios()
-
-  // 1. Verificar si ya existe una cuenta con ese correo
-  const yaExiste = usuarios.some((u) => u.email.toLowerCase() === emailLimpio)
-  //some devuelve valor booleano si cumple la condicion, si no la cumple devuelve undefined
-  if (yaExiste) {
-    throw new Error('Ya existe una cuenta registrada con este correo electrónico.')
-  }
-
-  // 2. Crear el nuevo usuario
-  const nuevoUsuario = {
-    id: `usr-${Date.now()}`,
+export async function registrarUsuario({ nombre, apellido = '', email, password, telefono, rol = 'inquilino' }) {
+  // El backend valida, hashea la contraseña y responde 409 si el email ya existe.
+  // El mensaje de error llega en err.message y lo muestra FormularioRegistro.
+  return apiClient.post('/auth/registro', {
     nombre: nombre.trim(),
-    email: emailLimpio,
+    apellido: apellido.trim(),
+    email: email.trim().toLowerCase(),
     password,
-    telefono: telefono?.trim() || '',
-    fotoPerfil: `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=13284c&color=fff`,
+    telefono: telefono?.trim() || undefined,
     rol,
-  }
-
-  // 3. Guardar en localStorage para que luego pueda iniciar sesión
-  const registrados = obtenerUsuariosRegistradosLocal()
-  registrados.push(nuevoUsuario)
-  localStorage.setItem(CLAVE_USUARIOS_REGISTRADOS, JSON.stringify(registrados))
-
-  return {
-    id: nuevoUsuario.id,
-    nombre: nuevoUsuario.nombre,
-    email: nuevoUsuario.email,
-    telefono: nuevoUsuario.telefono,
-    fotoPerfil: nuevoUsuario.fotoPerfil,
-    rol: nuevoUsuario.rol,
-  }
+  })
 }
 
-
-// ATENCIÓN: esto es SOLO para practicar. En un sistema real las contraseñas
-// jamás se descargan ni se comparan en el navegador: lo resuelve el servidor.
+// El servidor compara la contraseña y devuelve { token, usuario }.
+// Guardamos ambos en localStorage: el token lo usa apiClient en cada petición.
 export async function iniciarSesion(email, password) {
-  const usuarios = await obtenerTodosLosUsuarios()
-  const emailLimpio = email.trim().toLowerCase()
-
-  const usuario = usuarios.find(
-    (u) => u.email.toLowerCase() === emailLimpio && u.password === password,
-  )
-  if (!usuario) {
-    throw new Error('Email o contraseña incorrectos.')
+  try {
+    const { token, usuario } = await apiClient.post('/auth/login', {
+      email: email.trim().toLowerCase(),
+      password,
+    })
+    guardarSesion(token, usuario)
+    return usuario
+  } catch (error) {
+    if (error.status === 401) {
+      throw new Error('Email o contraseña incorrectos.', { cause: error })
+    }
+    throw error
   }
-
-  // Nunca se guarda la contraseña en la sesión.
-  const sesion = { 
-    id: usuario.id, 
-    nombre: usuario.nombre, 
-    email: usuario.email, 
-    telefono: usuario.telefono,
-    fotoPerfil: usuario.fotoPerfil,
-    rol: usuario.rol 
-  }
-  sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
-  return sesion
 }
 
+// Sesión local (sin consultar al servidor). Devuelve null si no hay token.
 export function obtenerSesion() {
-  try {
-    return JSON.parse(sessionStorage.getItem(CLAVE_SESION))
-  } catch {
-    return null
-  }
+  return obtenerSesionGuardada()
+}
+
+// Valida el token contra el servidor y devuelve los datos que trae el JWT.
+export function obtenerPerfil(options) {
+  return apiClient.get('/auth/perfil', options)
 }
 
 //actualizar datos del usuario activo
@@ -113,8 +89,8 @@ export function actualizarSesion(datosNuevos) {
   const sesionActual = obtenerSesion() || {}
   const sesionActualizada = { ...sesionActual, ...datosNuevos }
 
-  // 1. Guardamos en sessionStorage
-  sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesionActualizada))
+  // 1. Actualizamos la sesión activa (el token no cambia)
+  guardarSesion(null, sesionActualizada)
 
   // 2. Guardamos en localStorage
   try {
@@ -139,7 +115,7 @@ export function actualizarSesion(datosNuevos) {
 }
 
 export function cerrarSesion() {
-  sessionStorage.removeItem(CLAVE_SESION)
+  borrarSesion()
 }
 
 export function obtenerRutaPorRol(rol) {
@@ -159,12 +135,26 @@ export function obtenerRutaPorRol(rol) {
 // CLASE 3 · React Router: loaders
 // Un loader se ejecuta ANTES de mostrar la ruta. Si no hay sesión, lanza un
 // redirect y el componente privado nunca llega a dibujarse.
-export function protegerRuta() {
+// Además valida el token contra el servidor: si venció o es inválido, se
+// borra la sesión y se redirige a /login sin llegar a mostrar el panel.
+export async function protegerRuta() {
   const sesion = obtenerSesion()
   if (!sesion) {
     throw redirect('/login')
   }
-  return sesion // lo recibe LayoutPrivado con useLoaderData()
+
+  try {
+    // sinRedireccion: el 401 lo resolvemos acá con redirect() de React Router
+    const perfil = await obtenerPerfil({ sinRedireccion: true })
+    return { ...sesion, ...perfil } // lo recibe LayoutPrivado con useLoaderData()
+  } catch (error) {
+    if (error.status === 401) {
+      borrarSesion()
+      throw redirect('/login')
+    }
+    // Servidor caído u otro error: no deslogueamos al usuario
+    return sesion
+  }
 }
 
 export function redirigirSiHaySesion() {
