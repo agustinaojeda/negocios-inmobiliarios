@@ -42,8 +42,8 @@ CREATE TABLE usuarios (
 
 --usuario_roles
 CREATE TABLE usuario_roles (
-    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
-    rol_id INTEGER REFERENCES roles(id_rol) ON DELETE CASCADE,
+    usuario_id INTEGER UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+    rol_id INTEGER NOT NULL REFERENCES roles(id_rol) ON DELETE CASCADE,
     PRIMARY KEY (usuario_id, rol_id)
 );
 
