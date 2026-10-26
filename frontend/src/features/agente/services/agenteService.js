@@ -8,7 +8,7 @@ const URL_BASE = 'http://localhost:3000/api'
 
 function obtenerHeadersAuth() {
   const sesion = obtenerSesion()
-  const token = sesion?.token 
+  const token = sesion?.token
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
@@ -157,64 +157,66 @@ export async function eliminarImagenPropiedad(imagenId) {
 
 // --- AGENDA Y GESTIÓN DE CITAS ---
 
-export async function obtenerTodasLasCitas() {
-  const local = obtenerCitasLocal()
-  if (local && local.length > 0) {
-    return local
-  }
-
+/**
+ * Obtiene las citas del agente asignado desde la API de backend
+ */
+export async function obtenerCitasAgente() {
   try {
-    const res = await fetch(`${URL_BASE2}/citas.json`)
-    if (res.ok) {
-      const citasBase = await res.json()
-      guardarCitasLocal(citasBase)
-      return citasBase
+    const res = await fetch(`${URL_BASE}/citas`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...obtenerHeadersAuth(),
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Error al obtener citas del agente');
     }
+
+    const datos = await res.json();
+    const lista = datos.citas || [];
+
+    return lista.map((c) => ({
+      id: c.id,
+      clienteId: c.inquilino_id,
+      propiedadId: c.propiedad_id,
+      agenteId: c.agente_id,
+      fecha: c.fecha ? c.fecha.split('T')[0] : '',
+      hora: c.hora ? c.hora.slice(0, 5) : '',
+      estado: c.estado,
+      mensaje: c.mensaje,
+      propiedadTitulo: c.propiedad_titulo || 'Inmueble no especificado',
+      propiedadDireccion: c.propiedad_direccion || '',
+      propiedadImg: c.propiedad_img || '/img/propiedades/prop1.jpg',
+      clienteNombre: `${c.cliente_nombre || ''} ${c.cliente_apellido || ''}`.trim() || 'Cliente interesado',
+      clienteEmail: c.cliente_email || '',
+      clienteTelefono: c.cliente_telefono || '',
+    }));
   } catch (err) {
-    console.warn('No se pudo cargar citas.json inicial:', err)
+    console.error('Error al obtener citas del agente:', err);
+    return [];
+  }
+}
+
+/**
+ * Actualiza el estado de una cita (confirmada, cancelada, completada, pendiente) en la BD
+ */
+export async function actualizarEstadoCita(citaId, nuevoEstado) {
+  const res = await fetch(`${URL_BASE}/citas/${citaId}/estado`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...obtenerHeadersAuth(),
+    },
+    body: JSON.stringify({ estado: nuevoEstado }),
+  });
+
+  const datos = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(datos.error || 'Error al actualizar el estado de la visita');
   }
 
-  return []
-}
-
-export async function obtenerCitasAgente(agenteId) {
-  const [citas, propiedades, usuarios] = await Promise.all([
-    obtenerTodasLasCitas(),
-    obtenerTodasLasPropiedades(),
-    obtenerTodosLosUsuarios(),
-  ])
-
-  const idAgente = agenteId || obtenerSesion()?.id
-
-  const citasFiltradas = citas.filter(
-    (c) => String(c.agenteId) === String(idAgente) || !c.agenteId
-  )
-
-  return citasFiltradas.map((c) => {
-    const prop = propiedades.find((p) => String(p.id) === String(c.propiedadId))
-    const cliente = usuarios.find((u) => String(u.id) === String(c.clienteId))
-
-    return {
-      ...c,
-      propiedadTitulo: prop?.titulo || 'Inmueble no especificado',
-      propiedadDireccion: prop?.direccion || '',
-      propiedadImg: prop?.img || '/img/propiedades/prop1.jpg',
-      clienteNombre: cliente?.nombre || 'Cliente interesado',
-      clienteEmail: cliente?.email || '',
-      clienteTelefono: cliente?.telefono || '',
-    }
-  })
-}
-
-export async function actualizarEstadoCita(citaId, nuevoEstado) {
-  const citas = await obtenerTodasLasCitas()
-  const actualizadas = citas.map((c) => {
-    if (String(c.id) === String(citaId)) {
-      return { ...c, estado: nuevoEstado }
-    }
-    return c
-  })
-
-  guardarCitasLocal(actualizadas)
-  return actualizadas.find((c) => String(c.id) === String(citaId))
+  return datos.cita;
 }

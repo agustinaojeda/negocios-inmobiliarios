@@ -74,31 +74,52 @@ export async function registrarUsuario({ nombre, email, password, telefono, rol 
 }
 
 
-// ATENCIÓN: esto es SOLO para practicar. En un sistema real las contraseñas
-// jamás se descargan ni se comparan en el navegador: lo resuelve el servidor.
 export async function iniciarSesion(email, password) {
-  const usuarios = await obtenerTodosLosUsuarios()
-  const emailLimpio = email.trim().toLowerCase()
+  const emailLimpio = email.trim().toLowerCase();
 
+  // Intentamos autenticar primero contra la API real del Backend
+  try {
+    const respuesta = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailLimpio, password }),
+    });
+
+    if (respuesta.ok) {
+      const datos = await respuesta.json();
+      // Guardamos el usuario junto con su token JWT real
+      const sesion = {
+        ...datos.usuario,
+        token: datos.token,
+      };
+      sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
+      return sesion;
+    }
+  } catch (error) {
+    console.warn('Backend login no respondió, usando datos locales:', error);
+  }
+
+  // Fallback de respaldo con datos locales si el backend no responde
+  const usuarios = await obtenerTodosLosUsuarios();
   const usuario = usuarios.find(
     (u) => u.email.toLowerCase() === emailLimpio && u.password === password,
-  )
+  );
   if (!usuario) {
-    throw new Error('Email o contraseña incorrectos.')
+    throw new Error('Email o contraseña incorrectos.');
   }
 
-  // Nunca se guarda la contraseña en la sesión.
-  const sesion = { 
-    id: usuario.id, 
-    nombre: usuario.nombre, 
-    email: usuario.email, 
+  const sesion = {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.email,
     telefono: usuario.telefono,
     fotoPerfil: usuario.fotoPerfil,
-    rol: usuario.rol 
-  }
-  sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
-  return sesion
+    rol: usuario.rol
+  };
+  sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
+  return sesion;
 }
+
 
 export function obtenerSesion() {
   try {
