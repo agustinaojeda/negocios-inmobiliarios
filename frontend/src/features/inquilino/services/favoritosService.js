@@ -1,18 +1,21 @@
-import { obtenerSesion } from "../../auth/services/authService";
+import { obtenerToken } from "../../../shared/services/apiClient";
 
 const URL_BASE = "http://localhost:3000/api";
 
 function obtenerHeaders() {//como solo los inq pueden poner fav hace falta meter el header para verificar si de verdad se trata de un usuario inq
-  const sesion = obtenerSesion();
-  const token = sesion?.token; //AJUSTAR SI HACE FALTA CUANDO ESTE LISTO LO DE AUTH !!! D:
+  const token = obtenerToken();
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
-//obtiene la lista de ids favoritos del usuario actual
+//obtiene la lista favoritos del usuario actual
 export async function obtenerFavoritos() {
+  const token = obtenerToken();
+  if (!token) {
+    return [];
+  }
   const respuesta = await fetch(`${URL_BASE}/favoritos`, {
     headers: obtenerHeaders(),
   });
@@ -20,7 +23,7 @@ export async function obtenerFavoritos() {
     throw new Error("No se pudieron obtener los favoritos");
   }
   const datos = await respuesta.json();
-  return datos.favoritos || datos.datos || (Array.isArray(datos) ? datos : []);
+  return datos.favoritos;
 }
 
 export async function agregarFavorito(id) {

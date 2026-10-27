@@ -12,8 +12,6 @@ export default function FeaturedGrid({ busqueda = '' }) {
   const { datos: propiedades, cargando, error } = useFetch(obtenerPropiedadesDisponibles);
   const [sort, setSort] = useState('newest');
   const [activeTab, setActiveTab] = useState('todas');
-  
-  // Controla si se muestran todas las propiedades o las primeras 4
   const [mostrarTodas, setMostrarTodas] = useState(false);
   
   const headerRef = useRef(null);
@@ -21,7 +19,6 @@ export default function FeaturedGrid({ busqueda = '' }) {
   const btnRef = useRef(null);
 
   const { 
-    setTipo, 
     setCategoria, 
     propiedadesFiltradas,
     limpiarFiltros 
@@ -30,13 +27,9 @@ export default function FeaturedGrid({ busqueda = '' }) {
   const handleFilterClick = (filterValue, filterType) => {
     setActiveTab(filterValue);
     limpiarFiltros();
-    
-    // Al cambiar de filtro, volvemos a ocultar las tarjetas extra
     setMostrarTodas(false);
-
-    if (filterType === 'tipo') {
-      setTipo(filterValue);
-    } else if (filterType === 'categoria') {
+    
+    if (filterType === 'categoria') {
       setCategoria(filterValue);
     }
   };
@@ -46,12 +39,11 @@ export default function FeaturedGrid({ busqueda = '' }) {
   const sortedProperties = [...propiedadesFiltradas]
     .filter((p) => p.titulo.toLowerCase().includes(texto) || p.zona.toLowerCase().includes(texto))
     .sort((a, b) => {
-    if (sort === 'price-asc') return a.precio - b.precio;
-    if (sort === 'price-desc') return b.precio - a.precio;
-    return b.id - a.id; 
-  });
+      if (sort === 'price-asc') return Number(a.precio) - Number(b.precio);
+      if (sort === 'price-desc') return Number(b.precio) - Number(a.precio);
+      return new Date(b.fecha_actualizacion || b.fecha_creacion || 0) - new Date(a.fecha_actualizacion || a.fecha_creacion || 0); 
+    });
 
-  // Determinamos cuáles propiedades mostrar según el estado 'mostrarTodas'
   const propiedadesAMostrar = mostrarTodas 
     ? sortedProperties 
     : sortedProperties.slice(0, 4);
@@ -77,7 +69,7 @@ export default function FeaturedGrid({ busqueda = '' }) {
   }, []);
 
   return (
-    <section id="propiedades" aria-labelledby="propiedades-title" >
+    <section id="propiedades" aria-labelledby="propiedades-title">
       <div className="container">
         
         <div ref={headerRef} className="section-header reveal">
@@ -102,16 +94,6 @@ export default function FeaturedGrid({ busqueda = '' }) {
                 Todas
             </button>
             <button 
-              className={`filter-tab ${activeTab === 'venta' ? 'active' : ''}`} 
-              onClick={() => handleFilterClick('venta', 'tipo')}>
-                En venta
-            </button>
-            <button 
-              className={`filter-tab ${activeTab === 'alquiler' ? 'active' : ''}`} 
-              onClick={() => handleFilterClick('alquiler', 'tipo')}>
-                En alquiler
-            </button>
-            <button 
               className={`filter-tab ${activeTab === 'casa' ? 'active' : ''}`} 
               onClick={() => handleFilterClick('casa', 'categoria')}>
                 Casas
@@ -133,7 +115,7 @@ export default function FeaturedGrid({ busqueda = '' }) {
           </div>
         </div>
 
-       {cargando && <Spinner texto="Cargando propiedades..." />}
+        {cargando && <Spinner texto="Cargando propiedades..." />}
 
         {error && (
           <MensajeVacio titulo="No pudimos cargar las propiedades" texto={error.message} />
@@ -141,20 +123,18 @@ export default function FeaturedGrid({ busqueda = '' }) {
 
         {!cargando && !error && (
           <div className="properties-grid">
-          {propiedadesAMostrar.map((prop) => (
-          <PropertyCard key={prop.id} property={prop} />
-          ))}
-           </div>
+            {propiedadesAMostrar.map((prop) => (
+              <PropertyCard key={prop.id} property={prop} />
+            ))}
+          </div>
         )}
 
         {!cargando && !error && sortedProperties.length === 0 && (
-          <MensajeVacio titulo="No se encontraron propiedades" texto="Probá con otra zona o nombre." />
+          <MensajeVacio titulo="No se encontraron propiedades" texto="Probá con otra zona o categoría." />
         )}
 
-        {/* Solo mostramos el botón si hay más de 4 propiedades y 'mostrarTodas' es falso */}
-        
-          <div ref={btnRef} className="load-more-wrap reveal">
-            {!mostrarTodas && sortedProperties.length > 4 && (
+        <div ref={btnRef} className="load-more-wrap reveal">
+          {!mostrarTodas && sortedProperties.length > 4 && (
             <button 
               className="btn-load-more" 
               aria-label="Cargar más propiedades"
@@ -163,9 +143,8 @@ export default function FeaturedGrid({ busqueda = '' }) {
               Cargar más propiedades
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
             </button>
-            )}
-          </div>
-        
+          )}
+        </div>
 
       </div>
     </section>

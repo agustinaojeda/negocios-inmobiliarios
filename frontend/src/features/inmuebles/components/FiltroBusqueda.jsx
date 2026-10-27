@@ -20,7 +20,7 @@ export default function FiltroBusqueda({
 
         <div className="col-12 col-md-3 col-lg-2 d-grid">
           <button
-            type="button"
+            type="submit"
             className="btn rounded-pill py-2 px-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 shadow-sm"
             style={{ backgroundColor: '#13284c', borderColor: '#13284c' }}
             onClick={onEjecutarBusqueda}

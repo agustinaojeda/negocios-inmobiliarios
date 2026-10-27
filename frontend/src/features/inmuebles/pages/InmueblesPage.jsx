@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router'; 
 import GrillaPropiedades from "../../../shared/components/propiedades/GrillaPropiedades";
 import FiltroZonas from "../components/FiltroZonas";
 import FiltroPills from "../components/FiltroPills";
@@ -68,7 +70,7 @@ function InmueblesPage() {
 
       <div className="container mb-4">
         <div className="row g-5">
-          {/**filtros */}
+          {/** Filtros laterales */}
           <aside className="col-lg-3 filtros">
             <FiltroPills
               titulo="Tipo de operación"
@@ -102,7 +104,7 @@ function InmueblesPage() {
             )}
           </aside>
           
-          {/**grilla de propiedades */}
+          {/** Grilla de propiedades */}
           <section className="col-lg-9" style={{ paddingTop: 0 }}>
             <p className="small text-body-secondary">
               Mostrando {filtros.propiedadesFiltradas?.length ?? 0} de{" "}

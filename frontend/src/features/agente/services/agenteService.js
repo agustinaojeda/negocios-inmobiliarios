@@ -1,4 +1,5 @@
 import { obtenerSesion, obtenerTodosLosUsuarios } from '../../auth/services/authService'
+import { obtenerToken } from '../../../shared/services/apiClient'
 
 const URL_BASE2 = '/data'
 const CLAVE_PROPIEDADES = 'negocios-inmobiliarios:propiedades'
@@ -7,8 +8,7 @@ const CLAVE_CITAS = 'negocios-inmobiliarios:citas'
 const URL_BASE = 'http://localhost:3000/api'
 
 function obtenerHeadersAuth() {
-  const sesion = obtenerSesion()
-  const token = sesion?.token
+  const token = obtenerToken();
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

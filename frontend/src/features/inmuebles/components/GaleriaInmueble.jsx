@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import '../styles/GaleriaInmueble.css';
 
-export default function GaleriaInmueble({ imagen, titulo }) {
-  const [animando, setAnimando] = useState(false);
+export default function GaleriaInmueble({ imagenes = [], titulo = '' }) {
+  const [indiceActual, setIndiceActual] = useState(0);
 
-  const cambiarImagen = () => {
-    setAnimando(true);
+  const listaImagenes = Array.isArray(imagenes) && imagenes.length > 0
+    ? imagenes.map(img => (typeof img === 'string' ? img : img.url))
+    : [];
 
-    
-    setTimeout(() => {
-      setAnimando(false);
-    }, 500);
+  const fotoActual = listaImagenes[indiceActual] || '/placeholder.jpg';
+
+  const siguienteImagen = () => {
+    if (listaImagenes.length === 0) return;
+    setIndiceActual((prev) => (prev + 1) % listaImagenes.length);
+  };
+
+  const anteriorImagen = () => {
+    if (listaImagenes.length === 0) return;
+    setIndiceActual((prev) => (prev - 1 + listaImagenes.length) % listaImagenes.length);
   };
 
   return (
@@ -23,42 +30,29 @@ export default function GaleriaInmueble({ imagen, titulo }) {
             position: 'relative'
           }}
         >
-          <button
-            className="carousel-btn prev-btn"
-            aria-label="Anterior"
-            onClick={cambiarImagen}
-          >
-            ‹
-          </button>
+          {listaImagenes.length > 1 && (
+            <button
+              className="carousel-btn prev-btn"
+              aria-label="Anterior"
+              onClick={anteriorImagen}
+            >
+              ‹
+            </button>
+          )}
 
           <div
             className="carousel-track"
             style={{
               display: 'flex',
-              transform: animando
-                ? 'translateX(-100%)'
-                : 'translateX(0)',
-              transition: 'transform 0.5s ease-in-out'
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#000'
             }}
           >
             <img
-              src={imagen}
-              alt={`${titulo} - Foto`}
+              src={fotoActual}
+              alt={`${titulo} - Foto ${indiceActual + 1}`}
               style={{
-                flex: '0 0 100%',
-                width: '100%',
-                height: '500px',
-                objectFit: 'cover'
-              }}
-            />
-
-            {/* Copia necesaria solamente para crear el efecto visual */}
-            <img
-              src={imagen}
-              alt=""
-              aria-hidden="true"
-              style={{
-                flex: '0 0 100%',
                 width: '100%',
                 height: '500px',
                 objectFit: 'cover'
@@ -66,13 +60,32 @@ export default function GaleriaInmueble({ imagen, titulo }) {
             />
           </div>
 
-          <button
-            className="carousel-btn next-btn"
-            aria-label="Siguiente"
-            onClick={cambiarImagen}
-          >
-            ›
-          </button>
+          {listaImagenes.length > 1 && (
+            <button
+              className="carousel-btn next-btn"
+              aria-label="Siguiente"
+              onClick={siguienteImagen}
+            >
+              ›
+            </button>
+          )}
+
+          {listaImagenes.length > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '12px',
+                right: '12px',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: '#fff',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '12px'
+              }}
+            >
+              {indiceActual + 1} / {listaImagenes.length}
+            </div>
+          )}
         </div>
       </div>
     </section>

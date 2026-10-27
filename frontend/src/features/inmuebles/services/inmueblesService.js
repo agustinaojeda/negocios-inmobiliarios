@@ -1,37 +1,90 @@
 //busca las propiedades a la bd o json en este caso, es el unico que puede hacer fetch
 import { obtenerTodosLosUsuarios } from "../../auth/services/authService"
+import { obtenerFavoritos } from "../../inquilino/services/favoritosService"
+import { obtenerToken } from "../../../shared/services/apiClient"
 
-const URL_BASE = '/data'
+const URL_BASE = 'http://localhost:3000/api'
+const URL_BASE2 = '/data'
 
-export async function obtenerPropiedades() { //devuelve todas
-  const respuesta = await fetch(`${URL_BASE}/propiedades.json`)
+export async function obtenerPropiedadesDisponibles(filtros = {}){ 
+  const params = new URLSearchParams()
+
+  if (filtros.categoria && filtros.categoria !== 'todas') {
+    params.append('categoria', filtros.categoria)
+  }
+  if (filtros.tipo && filtros.tipo !== 'todas') {
+    params.append('estado_comercial', filtros.tipo)
+  }
+  if (filtros.zona && filtros.zona !== 'todas') {
+    params.append('zona', filtros.zona)
+  }
+
+  const queryString = params.toString() ? `?${params.toString()}` : ''
+  const respuesta = await fetch(`${URL_BASE}/inmuebles${queryString}`)
+
   if (!respuesta.ok) {
     throw new Error('No se pudieron obtener las propiedades')
   }
-  return respuesta.json()
-}
 
-export async function obtenerPropiedadesDisponibles(){ //devuelve solo las disponibles
-  const respuesta = await fetch(`${URL_BASE}/propiedades.json`)
-  if (!respuesta.ok) {
-    throw new Error('No se pudieron obtener las propiedades')
+  const propiedades = await respuesta.json();
+  let favsIds = new Set();
+  try {
+    const listaFavs = await obtenerFavoritos();
+    favsIds = new Set(listaFavs.map((f) => Number(f.id)));
+  } catch (err) {
+    //si no esta autenticado o falla la ruta de favoritos continuamos con el array de ids vacio
   }
-  const propiedades = await respuesta.json()
-  return propiedades.filter((p) => p.estado === 'disponible')
+
+  //si esta en favorito lo marca sino no (es para pintar el corazoncito)
+  return propiedades.map((p) => ({
+    ...p,
+    es_favorito: favsIds.has(Number(p.id)),
+  }));
 }
 
 export async function obtenerPropiedadPorId(id) {
-  const propiedades = await obtenerPropiedades()
-  const propiedad = propiedades.find((p) => p.id === Number(id))
-  if (!propiedad) {
-    throw new Error('La propiedad que buscás no existe')
+  const token = obtenerToken();
+  const respuesta = await fetch(`${URL_BASE}/inmuebles/${id}`);
+
+  if (respuesta.ok) {
+    return await respuesta.json();
   }
-  return propiedad
+  
+  if(token){
+    const agenteRta = await fetch(`${URL_BASE}/inmuebles/panel/${id}`, {
+    headers: obtenerHeaders(),
+  });
+    if(agenteRta.ok){
+      return await agenteRta.json();
+    }
+  }
+
+  throw new Error('La propiedad que buscás no existe')
 }
+
 
 export async function obtenerUltimas(limite = 3){ //devuelve las ultimas tres cargadas y disponibles
     const propiedades = await obtenerPropiedadesDisponibles();
     return propiedades.slice(-limite).reverse();
+}
+
+function obtenerHeaders() {
+  const token = obtenerToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+
+//sacan los datos del json, no lo borro por las dudas
+
+export async function obtenerPropiedades() { //devuelve todas
+  const respuesta = await fetch(`${URL_BASE2}/propiedades.json`)
+  if (!respuesta.ok) {
+    throw new Error('No se pudieron obtener las propiedades')
+  }
+  return respuesta.json()
 }
 
 export async function obtenerInmueblesAsignadosPorUsuario(usuario) {

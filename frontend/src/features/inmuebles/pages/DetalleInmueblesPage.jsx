@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../styles/DetalleInmueblesPage.css';
 import { useParams, useOutletContext } from 'react-router';
 import { useFetch } from '../../../shared/hooks/useFetch';
 import Spinner from '../../../shared/components/Spinner';
 import { obtenerPropiedadPorId } from '../services/inmueblesService';
+import { useFavoritos } from '../../inquilino/hooks/useFavoritos';
+import { agregarFavorito, eliminarFavorito } from '../../inquilino/services/favoritosService';4
 
 // Subcomponentes
 import GaleriaInmueble from '../components/GaleriaInmueble';
 import FichaTecnica from '../components/FichaTecnica';
 import ContactoAsesor from '../components/ContactoAsesor';
 import PropiedadesSimilares from '../components/PropiedadesSimilares';
-
+import { obtenerSesion } from '../../auth/services/authService';
 
 export default function DetalleInmueblesPage() {
+  const sesion = obtenerSesion();
+  const usuario = sesion?.usuario || sesion;
+  const esInquilino =
+    usuario && (usuario.rol === "inquilino" || usuario.rol_id === 3);
+
   const { id } = useParams();
   const { mostrarToast } = useOutletContext();
-  const [isFavorite, setIsFavorite] = useState(false);
-
+  const { favoritos } = useFavoritos();
 
   const { datos: propiedad, cargando, error } = useFetch(obtenerPropiedadPorId, id);
 
@@ -24,11 +30,31 @@ export default function DetalleInmueblesPage() {
   if (error) return <div className="container py-5 text-center"><h2>Error: {error.message}</h2></div>;
   if (!propiedad) return null;
 
-  const tipoOperacion = propiedad.tipo.charAt(0).toUpperCase() + propiedad.tipo.slice(1);
+  const esFavorito = favoritos.some((f) => Number(f.id) === Number(propiedad.id));
+
+  const operacion = propiedad.estado_comercial || 'venta';
+  const visibilidad = propiedad.estado_visibilidad || propiedad.estado || 'activo';
+  const tipoOperacion = operacion.charAt(0).toUpperCase() + operacion.slice(1);
 
   const handleCopiarEnlace = () => {
     navigator.clipboard.writeText(window.location.href);
     mostrarToast('Enlace copiado al portapapeles');
+  };
+
+  const handleToggleFavorito = async () => {
+    try {
+      if (esFavorito) {
+        await eliminarFavorito(propiedad.id);
+        mostrarToast('Propiedad eliminada de favoritos');
+      } else {
+        await agregarFavorito(propiedad.id);
+        mostrarToast('Propiedad guardada en favoritos');
+      }
+      window.dispatchEvent(new Event("favoritosUpdated"));
+    } catch (err) {
+      console.error(err);
+      mostrarToast(err.message || 'Error al actualizar favoritos');
+    }
   };
 
   return (
@@ -39,32 +65,20 @@ export default function DetalleInmueblesPage() {
           <div className="property-topbar-inner">
             <div className="topbar-left">
               <span className="topbar-badge venta">{tipoOperacion}</span>
-              <span className={`topbar-badge ${propiedad.estado.toLowerCase()}`}>
-                {propiedad.estado.toUpperCase()}
+              <span className={`topbar-badge ${visibilidad.toLowerCase()}`}>
+                {visibilidad.toUpperCase()}
               </span>
             </div>
 
-
             <div className="topbar-actions">
-
               {/* Botón Guardar en favoritos */}
+              {esInquilino && (
               <button
-                className={`topbar-btn prop-fav-btn ${isFavorite ? 'active' : ''}`}
+                className={`topbar-btn prop-fav-btn ${esFavorito ? 'active' : ''}`}
                 id="propFavBtn"
-                aria-pressed={isFavorite}
-                aria-label={
-                  isFavorite
-                    ? 'Eliminar de favoritos'
-                    : 'Guardar en favoritos'
-                }
-                onClick={() => {
-                  setIsFavorite(!isFavorite);
-                  mostrarToast(
-                    isFavorite
-                      ? 'Propiedad eliminada de favoritos'
-                      : 'Propiedad guardada en favoritos'
-                  );
-                }}
+                aria-pressed={esFavorito}
+                aria-label={esFavorito ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+                onClick={handleToggleFavorito}
               >
                 <span className="fav-icon">
                   <svg
@@ -72,7 +86,7 @@ export default function DetalleInmueblesPage() {
                     width="14"
                     height="14"
                     viewBox="0 0 24 24"
-                    fill="none"
+                    fill={esFavorito ? "currentColor" : "none"}
                     stroke="currentColor"
                     strokeWidth="2.5"
                     strokeLinecap="round"
@@ -83,9 +97,9 @@ export default function DetalleInmueblesPage() {
                   </svg>
                 </span>
 
-                {isFavorite ? 'Guardado' : 'Guardar'}
+                {esFavorito ? 'Guardado' : 'Guardar'}
               </button>
-
+              )}
 
               {/* Botón Compartir */}
               <button
@@ -112,10 +126,8 @@ export default function DetalleInmueblesPage() {
                   <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
                   <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
                 </svg>
-
                 Compartir
               </button>
-
 
               {/* Botón Consultar */}
               <button
@@ -141,34 +153,28 @@ export default function DetalleInmueblesPage() {
                 >
                   <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.5 8.5 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
-
                 Consultar
               </button>
-
             </div>
-
-
           </div>
         </div>
       </div>
 
-      <GaleriaInmueble imagen={propiedad.img} titulo={propiedad.titulo} />
+      <GaleriaInmueble imagenes={propiedad.imagenes} titulo={propiedad.titulo} />
 
       <section>
         <div className="container">
           <div className="detail-layout">
-
             <FichaTecnica propiedad={propiedad} />
 
             <ContactoAsesor
-              propiedadId={propiedad.id}
-              tituloPropiedad={propiedad.titulo}
+              propiedad={propiedad}
               mostrarToast={mostrarToast}
             />
-
           </div>
         </div>
       </section>
+
       <PropiedadesSimilares />
     </div>
   );

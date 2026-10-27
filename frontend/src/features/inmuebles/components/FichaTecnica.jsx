@@ -1,19 +1,23 @@
 import React from 'react';
 import '../styles/FichaTecnica.css';
+import { formatearPrecio } from '../../../shared/utils/formato';
 
 export default function FichaTecnica({ propiedad }) {
-  const precioFormateado = propiedad.precio.toLocaleString('es-AR');
   const categoriaCapitalizada = propiedad.categoria.charAt(0).toUpperCase() + propiedad.categoria.slice(1);
-  const tipoCapitalizado = propiedad.tipo.charAt(0).toUpperCase() + propiedad.tipo.slice(1);
+  const tipoCapitalizado = propiedad.estado_comercial.charAt(0).toUpperCase() + propiedad.estado_comercial.slice(1);
 
   return (
     <div className="detail-main">
       <div className="prop-header reveal visible">
         <div className="prop-price-row">
           <div>
-            <div className="prop-price">USD {precioFormateado}</div>
-            <div className="prop-price-sub">Expensas: Consultar</div>
-          </div>
+            <div className="prop-price">{formatearPrecio(propiedad.precio, propiedad.moneda)}</div>
+            {Number(propiedad?.expensas) > 0 && (
+              <div className="prop-price-sub">
+                Expensas: {formatearPrecio(propiedad.expensas, propiedad.moneda)}
+              </div>
+            )}
+            </div>
         </div>
         <h1 className="prop-title">{propiedad.titulo}</h1>
         <p className="prop-address">
@@ -24,7 +28,7 @@ export default function FichaTecnica({ propiedad }) {
 
       <div className="prop-stats reveal visible">
         <div className="prop-stat">
-          <div className="prop-stat-value">{propiedad.amb}</div>
+          <div className="prop-stat-value">{propiedad.ambientes}</div>
           <div className="prop-stat-label">Ambientes</div>
         </div>
         <div className="prop-stat">
@@ -40,7 +44,7 @@ export default function FichaTecnica({ propiedad }) {
       <div className="prop-section reveal visible">
         <h2 className="prop-section-title">Sobre esta propiedad</h2>
         <div className="prop-desc-container">
-          <p className="prop-desc">{propiedad.desc}</p>
+          <p className="prop-desc">{propiedad.descripcion}</p>
         </div>
       </div>
 
@@ -93,7 +97,7 @@ export default function FichaTecnica({ propiedad }) {
           </div>
           <div className="info-row" style={{ padding: '0.65rem 0', borderBottom: '1px solid var(--gray-100)' }}>
             <span className="info-row-label">Ambientes</span>
-            <span className="info-row-value">{propiedad.amb}</span>
+            <span className="info-row-value">{propiedad.ambientes}</span>
           </div>
           <div className="info-row" style={{ padding: '0.65rem 0', borderBottom: '1px solid var(--gray-100)' }}>
             <span className="info-row-label">Baños</span>

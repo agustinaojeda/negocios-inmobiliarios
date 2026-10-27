@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 import "../styles/Hero.css";
-import heroImg from "../../../assets/hero.jpg"; 
+import heroImg from "../../../assets/hero.jpg";
 import FiltroBusqueda from "../../inmuebles/components/FiltroBusqueda";
 
 // Subcomponente para animar los números individualmente
@@ -13,7 +14,7 @@ const AnimatedCounter = ({ target, suffix, startAnimation }) => {
 
     let current = 0;
     const increment = Math.ceil(target / 60);
-    
+
     const timer = setInterval(() => {
       current = Math.min(current + increment, target);
       setCount(current);
@@ -25,15 +26,23 @@ const AnimatedCounter = ({ target, suffix, startAnimation }) => {
 
   return (
     <div className="stat-value">
-      {count.toLocaleString('es-AR')}{suffix}
+      {count.toLocaleString("es-AR")}
+      {suffix}
     </div>
   );
 };
 
-export default function Hero({ busqueda, onBuscar }) {
+export default function Hero() {
+  const [busqueda, setBusqueda] = useState("");
+  const navigate = useNavigate();
+
   const irAResultados = (e) => {
     e?.preventDefault();
-    document.getElementById("propiedades")?.scrollIntoView({ behavior: "smooth" });
+    if (busqueda.trim()) {
+      navigate(`/inmuebles?buscar=${encodeURIComponent(busqueda.trim())}`);
+    } else {
+      navigate("/inmuebles");
+    }
   };
   const statsRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -47,7 +56,7 @@ export default function Hero({ busqueda, onBuscar }) {
           observer.disconnect(); // Dejamos de observar una vez que se activa
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     if (statsRef.current) {
@@ -58,22 +67,30 @@ export default function Hero({ busqueda, onBuscar }) {
   }, []);
 
   return (
-    <section className="hero-section" style={{ backgroundImage: `url(${heroImg})` }}>
+    <section
+      className="hero-section"
+      style={{ backgroundImage: `url(${heroImg})` }}
+    >
       <div className="hero-overlay d-flex align-items-center text-center">
         <div className="container hero-content mt-5 pt-5">
-          
           <h1 className="hero-title">
             Tu próxima propiedad <br /> <strong>te está esperando</strong>
           </h1>
-          
+
           <p className="hero-subtitle">
-            Encontrá casas, departamentos y PH en venta o alquiler en las mejores ubicaciones de Argentina, con asesoramiento profesional y operaciones seguras.
+            Encontrá casas, departamentos y PH en venta o alquiler en las
+            mejores ubicaciones de Argentina, con asesoramiento profesional y
+            operaciones seguras.
           </p>
-          
-          <form className="mx-auto" style={{ maxWidth: 800 }} onSubmit={irAResultados}>
+
+          <form
+            className="mx-auto"
+            style={{ maxWidth: 800 }}
+            onSubmit={irAResultados}
+          >
             <FiltroBusqueda
               busqueda={busqueda}
-              onBuscar={onBuscar}
+              onBuscar={setBusqueda}
               onEjecutarBusqueda={irAResultados}
             />
           </form>
@@ -81,21 +98,33 @@ export default function Hero({ busqueda, onBuscar }) {
           {/* Métricas de Confianza */}
           <div className="hero-stats" ref={statsRef}>
             <div className="stat-item">
-              <AnimatedCounter target={850} suffix="+" startAnimation={isVisible} />
+              <AnimatedCounter
+                target={850}
+                suffix="+"
+                startAnimation={isVisible}
+              />
               <div className="stat-label">Propiedades activas</div>
             </div>
-            
+
             <div className="stat-divider" aria-hidden="true"></div>
 
             <div className="stat-item">
-              <AnimatedCounter target={1200} suffix="+" startAnimation={isVisible} />
+              <AnimatedCounter
+                target={1200}
+                suffix="+"
+                startAnimation={isVisible}
+              />
               <div className="stat-label">Clientes satisfechos</div>
             </div>
 
             <div className="stat-divider" aria-hidden="true"></div>
 
             <div className="stat-item">
-              <AnimatedCounter target={15} suffix=" años" startAnimation={isVisible} />
+              <AnimatedCounter
+                target={15}
+                suffix=" años"
+                startAnimation={isVisible}
+              />
               <div className="stat-label">De experiencia</div>
             </div>
           </div>
@@ -105,7 +134,6 @@ export default function Hero({ busqueda, onBuscar }) {
             <span className="scroll-line"></span>
             Explorar
           </div>
-
         </div>
       </div>
     </section>
