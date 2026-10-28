@@ -71,9 +71,9 @@
 6. **Configurar frontend:**
    En una nueva pestaña o ventana de la terminal, navega a la carpeta del cliente desde la raíz del proyecto:
    ```bash
-  cd frontend
-  npm install
-  npm run dev
-  ```
+   cd frontend
+   npm install
+   npm run dev
+     ```
 7. **Acceder a la aplicación:**
    Abre tu navegador e ingresa a http://localhost:5173 (o el puerto configurado en consola).
