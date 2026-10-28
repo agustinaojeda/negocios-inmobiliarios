@@ -7,6 +7,7 @@ import favoritosRoutes from './modules/favoritos/favoritos.routes.js';
 import citasRoutes from './modules/citas/citas.routes.js';
 import usuariosRoutes from './modules/usuarios/usuarios.routes.js';
 import operacionesRoutes from './modules/operaciones/operaciones.routes.js';
+import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import { notFound } from './shared/middlewares/notFound.js';
 import { errorHandler } from './shared/middlewares/errorHandler.js';
 
@@ -28,6 +29,8 @@ app.use('/api/citas', citasRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 
 app.use('/api/operaciones', operacionesRoutes);
+
+app.use('/api/dashboard', dashboardRoutes);
 
 // Manejo de errores y 404
 app.use(notFound);
