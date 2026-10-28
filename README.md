@@ -45,16 +45,35 @@
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/agustinaojeda/negocios-inmobiliarios.git](https://github.com/agustinaojeda/negocios-inmobiliarios.git)
+   git clone https://github.com/agustinaojeda/negocios-inmobiliarios.git
    cd negocios-inmobiliarios
    ```
-2. **Instalar dependencias:**
+2. **Configurar backend:**
    ```bash
+   cd backend
    npm install
    ```
-3. **Iniciar el servidor de desarrollo:**
+3. **Crear el archivo .env a partir de la plantilla .env.example y configurar la conexión a PostgreSQL y la clave para JWT:**
+   ```bash
+   cp .env.example .env
+   ```
+4. **Configurar la Base de Datos (PostgreSQL):**
+   - Crear la base de datos negocios-inmobiliarios
+   - Ejecutar script de migracion:
+   ```bash
+   npm run db:migrate
+   ```   
+5. **Iniciar el Backend:**
    ```bash
    npm run dev
    ```
-4. **Acceder a la aplicación:**
+   El servidor estará escuchando en http://localhost:3000.
+6. **Configurar frontend:**
+   En una nueva pestaña o ventana de la terminal, navega a la carpeta del cliente desde la raíz del proyecto:
+   ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+7. **Acceder a la aplicación:**
    Abre tu navegador e ingresa a http://localhost:5173 (o el puerto configurado en consola).
