@@ -174,8 +174,8 @@ function SeccionContratos() {
                   <td>
                     <span
                       className={`badge rounded-pill ${op.tipo_operacion === 'venta'
-                          ? 'bg-success-subtle text-success border border-success-subtle'
-                          : 'bg-primary-subtle text-primary border border-primary-subtle'
+                        ? 'bg-success-subtle text-success border border-success-subtle'
+                        : 'bg-primary-subtle text-primary border border-primary-subtle'
                         }`}
                     >
                       {op.tipo_operacion ? op.tipo_operacion.toUpperCase() : 'VENTA'}
@@ -183,10 +183,10 @@ function SeccionContratos() {
                   </td>
                   <td>
                     <div className="fw-semibold text-dark small">
-                      {op.inmueble_titulo || `Inmueble #${op.propiedad_id}`}
+                      {op.propiedad_titulo || `Inmueble #${op.propiedad_id}`}
                     </div>
                     <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                      {op.inmueble_zona || ''}
+                      {op.propiedad_zona || ''}
                     </div>
                   </td>
                   <td className="small text-secondary">
@@ -200,7 +200,7 @@ function SeccionContratos() {
                       : `Agente #${op.agente_id}`}
                   </td>
                   <td className="fw-bold small text-end text-dark">
-                    {op.moneda || 'USD'} {Number(op.monto).toLocaleString('es-AR')}
+                    {op.moneda || 'USD'} {Number(op.monto_cierre || 0).toLocaleString('es-AR')}
                   </td>
                 </tr>
               ))}

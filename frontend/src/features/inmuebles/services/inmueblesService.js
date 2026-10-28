@@ -6,7 +6,7 @@ import { obtenerToken } from "../../../shared/services/apiClient"
 const URL_BASE = 'http://localhost:3000/api'
 const URL_BASE2 = '/data'
 
-export async function obtenerPropiedadesDisponibles(filtros = {}){ 
+export async function obtenerPropiedadesDisponibles(filtros = {}) {
   const params = new URLSearchParams()
 
   if (filtros.categoria && filtros.categoria !== 'todas') {
@@ -49,12 +49,12 @@ export async function obtenerPropiedadPorId(id) {
   if (respuesta.ok) {
     return await respuesta.json();
   }
-  
-  if(token){
+
+  if (token) {
     const agenteRta = await fetch(`${URL_BASE}/inmuebles/panel/${id}`, {
-    headers: obtenerHeaders(),
-  });
-    if(agenteRta.ok){
+      headers: obtenerHeaders(),
+    });
+    if (agenteRta.ok) {
       return await agenteRta.json();
     }
   }
@@ -63,9 +63,9 @@ export async function obtenerPropiedadPorId(id) {
 }
 
 
-export async function obtenerUltimas(limite = 3){ //devuelve las ultimas tres cargadas y disponibles
-    const propiedades = await obtenerPropiedadesDisponibles();
-    return propiedades.slice(-limite).reverse();
+export async function obtenerUltimas(limite = 3) { //devuelve las ultimas tres cargadas y disponibles
+  const propiedades = await obtenerPropiedadesDisponibles();
+  return propiedades.slice(-limite).reverse();
 }
 
 function obtenerHeaders() {
@@ -78,14 +78,11 @@ function obtenerHeaders() {
 
 
 //sacan los datos del json, no lo borro por las dudas
-
-export async function obtenerPropiedades() { //devuelve todas
-  const respuesta = await fetch(`${URL_BASE2}/propiedades.json`)
-  if (!respuesta.ok) {
-    throw new Error('No se pudieron obtener las propiedades')
-  }
-  return respuesta.json()
+//en este caso se usa como puente ya que obtenerPropiedades la usan varios archivos entonces para no romper nada
+export async function obtenerPropiedades() {
+  return obtenerPropiedadesDisponibles()
 }
+
 
 export async function obtenerInmueblesAsignadosPorUsuario(usuario) {
   if (!usuario) return [];
