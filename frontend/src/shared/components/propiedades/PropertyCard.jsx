@@ -11,6 +11,7 @@ import {
   eliminarFavorito,
 } from "../../../features/inquilino/services/favoritosService";
 import { obtenerSesion } from "../../../features/auth/services/authService";
+import { obtenerUrlImagen } from "../../../shared/utils/imagenUrl";
 
 export default function PropertyCard({ property, cita, esAsignado = false }) {
   const sesion = obtenerSesion();
@@ -22,6 +23,11 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
   const propData = property || cita?.propiedad;
   const esCita = Boolean(cita);
   const esAlquiler = propData?.tipo === "alquiler";
+
+  const urlImagen =
+    propData.imagenes && propData.imagenes.length > 0
+      ? propData.imagenes[0].url
+      : propData.img;
 
   const cardRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -96,11 +102,14 @@ export default function PropertyCard({ property, cita, esAsignado = false }) {
         {/* IMAGEN + BADGE / CORAZÓN */}
         <div className="card-image-wrap position-relative">
           <img
-            src={propData.img || propData.imagenes?.[0]?.url}
+            src={obtenerUrlImagen(urlImagen)}
             alt={propData.titulo}
             loading="lazy"
             width="400"
             height="300"
+            onError={(e) => {
+              e.target.src = "/img/propiedades/prop1.jpg";
+            }}
           />
 
           {esCita ? (

@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import { useFetch } from '../../../shared/hooks/useFetch'
-import { obtenerPropiedades, FiltroPills } from '../../inmuebles'
+import { obtenerTodasLasPropiedades } from '../../agente/services/agenteService'
+import { FiltroPills } from '../../inmuebles'
 import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
 import TablaGestionInmuebles from '../../../shared/components/propiedades/TablaGestionInmuebles'
 import './filtro-compacto.css'
 
 export default function GestionInmuebles() {
-  const { datos: propiedades = [], cargando, error } = useFetch(obtenerPropiedades)
+  const { datos: propiedades = [], cargando, error } = useFetch(obtenerTodasLasPropiedades)
   const [filtroEstado, setFiltroEstado] = useState('todas')
 
   const listaPropiedades = propiedades || []
   const propiedadesFiltradas =
     filtroEstado === 'todas' || filtroEstado === 'todos'
       ? listaPropiedades
-      : listaPropiedades.filter((p) => p.estado === filtroEstado)
+      : listaPropiedades.filter((p) => p.estado_visibilidad === filtroEstado)
 
   if (cargando) return <Spinner texto="Cargando catálogo..." />
   if (error) return <MensajeVacio titulo="No pudimos cargar el catálogo" texto={error.message} />
@@ -30,16 +31,13 @@ export default function GestionInmuebles() {
             Control de publicaciones, estados y asignaciones.
           </p>
         </div>
-        <button className="btn btn-sm btn-primary rounded-pill px-3">
-          + Publicar Inmueble
-        </button>
       </div>
 
       {/* Filtros rápidos por estado con FiltroPills y estilo compacto */}
       <div className="filtro-compacto mb-3">
         <FiltroPills
           titulo="Filtrar por estado:"
-          opciones={['todas', 'disponible', 'reservado', 'vendido']}
+          opciones={['todas', 'activo', 'inactivo']}
           seleccionado={filtroEstado}
           onSeleccionar={setFiltroEstado}
         />
@@ -49,10 +47,7 @@ export default function GestionInmuebles() {
       {propiedadesFiltradas.length > 0 ? (
         <TablaGestionInmuebles
           propiedades={propiedadesFiltradas}
-          editableEstado={false}
-          onEditar={(p) => console.log('Editar inmueble admin', p)}
-          onEliminar={(id, titulo) => console.log('Pausar inmueble admin', id, titulo)}
-          textoBotonEliminar="Pausar"
+          admin={true}
         />
       ) : (
         <MensajeVacio

@@ -100,11 +100,13 @@ export const listar = async (
   filtros = {},
   incluirInactivas = false,
   agenteId = null,
+  propietarioId = null
 ) => {
   const { categoria, zona, estado_comercial, estado_visibilidad } = filtros;
 
-  let query = `SELECT id, propietario_id, agente_id, titulo, descripcion, categoria, moneda, precio, expensas, zona, direccion, ambientes, banos, m2, estado_comercial, estado_visibilidad, fecha_creacion, fecha_actualizacion
+  let query = `SELECT propiedades.id, propiedades.propietario_id, propiedades.agente_id, propiedades.titulo, propiedades.descripcion, propiedades.categoria, propiedades.moneda, propiedades.precio, propiedades.expensas, propiedades.zona, propiedades.direccion, propiedades.ambientes, propiedades.banos, propiedades.m2, propiedades.estado_comercial, propiedades.estado_visibilidad, propiedades.fecha_creacion, propiedades.fecha_actualizacion, a_usr.nombre AS agente_nombre, a_usr.apellido AS agente_apellido
     FROM propiedades
+    LEFT JOIN usuarios AS a_usr ON propiedades.agente_id = a_usr.id
     WHERE 1=1
   `;
 
@@ -120,6 +122,11 @@ export const listar = async (
   if (agenteId) {
     values.push(agenteId);
     query += ` AND agente_id = $${values.length}`;
+  }
+
+   if (propietarioId) {
+    values.push(propietarioId);
+    query += ` AND propietario_id = $${values.length}`;
   }
 
   //filtros

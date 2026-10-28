@@ -17,13 +17,13 @@ export default function MisPropiedades({ propietarioId = null }) {
     setFiltroEstadoCita,
   } = useMisPropiedades(propietarioId);
 
-  const opcionesEstadoInmueble = ["todas", "disponible", "reservado", "alquilado", "vendido"];
+  const opcionesEstadoInmueble = ["todas", "venta", "alquiler"];
   const opcionesEstadoCita = ["todas", "pendiente", "confirmada", "completada", "cancelada"];
 
   return (
-    <div className="mis-propiedades-container">
-      <div className="d-flex justify-content-center mb-4">
-        <div className="btn-group bg-light p-1 rounded-pill shadow-sm" role="group">
+    <div className="card border-0 shadow-sm rounded-4 p-4 bg-white position-relative">
+      {/*<div className="d-flex justify-content-center mb-4">
+         <div className="btn-group bg-light p-1 rounded-pill shadow-sm" role="group">
           <button
             type="button"
             className={`btn btn-sm rounded-pill px-4 fw-semibold ${
@@ -43,7 +43,7 @@ export default function MisPropiedades({ propietarioId = null }) {
             Citas de Visita ({citas.length})
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* MIS INMUEBLES */}
       {subVista === "inmuebles" && (
@@ -68,7 +68,7 @@ export default function MisPropiedades({ propietarioId = null }) {
       )}
 
       {/* CITAS RECIBIDAS */}
-      {subVista === "citas" && (
+      {/* {subVista === "citas" && (
         <SeccionPropiedades
           titulo="Citas de Visita Recibidas"
           subtitulo="Información sobre las solicitudes de visita, clientes interesados y el asesor asignado"
@@ -87,7 +87,7 @@ export default function MisPropiedades({ propietarioId = null }) {
             onSeleccionar={setFiltroEstadoCita}
           />
         </SeccionPropiedades>
-      )}
+      )} */}
     </div>
   );
 }

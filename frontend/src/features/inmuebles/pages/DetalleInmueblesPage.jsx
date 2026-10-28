@@ -1,18 +1,24 @@
-import React from 'react';
-import '../styles/DetalleInmueblesPage.css';
-import { useParams, useOutletContext } from 'react-router';
-import { useFetch } from '../../../shared/hooks/useFetch';
-import Spinner from '../../../shared/components/Spinner';
-import { obtenerPropiedadPorId } from '../services/inmueblesService';
-import { useFavoritos } from '../../inquilino/hooks/useFavoritos';
-import { agregarFavorito, eliminarFavorito } from '../../inquilino/services/favoritosService';4
+import React from "react";
+import { Link } from "react-router";
+import "../styles/DetalleInmueblesPage.css";
+import { useParams, useOutletContext } from "react-router";
+import { useFetch } from "../../../shared/hooks/useFetch";
+import Spinner from "../../../shared/components/Spinner";
+import { obtenerPropiedadPorId } from "../services/inmueblesService";
+import { useFavoritos } from "../../inquilino/hooks/useFavoritos";
+import {
+  agregarFavorito,
+  eliminarFavorito,
+} from "../../inquilino/services/favoritosService";
+4;
 
 // Subcomponentes
-import GaleriaInmueble from '../components/GaleriaInmueble';
-import FichaTecnica from '../components/FichaTecnica';
-import ContactoAsesor from '../components/ContactoAsesor';
-import PropiedadesSimilares from '../components/PropiedadesSimilares';
-import { obtenerSesion } from '../../auth/services/authService';
+import GaleriaInmueble from "../components/GaleriaInmueble";
+import FichaTecnica from "../components/FichaTecnica";
+import ContactoAsesor from "../components/ContactoAsesor";
+import PropiedadesSimilares from "../components/PropiedadesSimilares";
+import { obtenerSesion } from "../../auth/services/authService";
+import MensajeVacio from "../../../shared/components/MensajeVacio";
 
 export default function DetalleInmueblesPage() {
   const sesion = obtenerSesion();
@@ -24,36 +30,53 @@ export default function DetalleInmueblesPage() {
   const { mostrarToast } = useOutletContext();
   const { favoritos } = useFavoritos();
 
-  const { datos: propiedad, cargando, error } = useFetch(obtenerPropiedadPorId, id);
+  const {
+    datos: propiedad,
+    cargando,
+    error,
+  } = useFetch(obtenerPropiedadPorId, id);
 
   if (cargando) return <Spinner texto="Cargando detalles de la propiedad..." />;
-  if (error) return <div className="container py-5 text-center"><h2>Error: {error.message}</h2></div>;
+  if (error) {
+    return (
+      <div className="py-5 m-5">
+        <MensajeVacio titulo={error.message} texto="">
+          <Link to={"/"} className="btn btn-sm btn-primary rounded-pill px-4 mt-2">
+            Volver al inicio
+          </Link>
+        </MensajeVacio>
+      </div>
+    );
+  }
   if (!propiedad) return null;
 
-  const esFavorito = favoritos.some((f) => Number(f.id) === Number(propiedad.id));
+  const esFavorito = favoritos.some(
+    (f) => Number(f.id) === Number(propiedad.id),
+  );
 
-  const operacion = propiedad.estado_comercial || 'venta';
-  const visibilidad = propiedad.estado_visibilidad || propiedad.estado || 'activo';
+  const operacion = propiedad.estado_comercial || "venta";
+  const visibilidad =
+    propiedad.estado_visibilidad || propiedad.estado || "activo";
   const tipoOperacion = operacion.charAt(0).toUpperCase() + operacion.slice(1);
 
   const handleCopiarEnlace = () => {
     navigator.clipboard.writeText(window.location.href);
-    mostrarToast('Enlace copiado al portapapeles');
+    mostrarToast("Enlace copiado al portapapeles");
   };
 
   const handleToggleFavorito = async () => {
     try {
       if (esFavorito) {
         await eliminarFavorito(propiedad.id);
-        mostrarToast('Propiedad eliminada de favoritos');
+        mostrarToast("Propiedad eliminada de favoritos");
       } else {
         await agregarFavorito(propiedad.id);
-        mostrarToast('Propiedad guardada en favoritos');
+        mostrarToast("Propiedad guardada en favoritos");
       }
       window.dispatchEvent(new Event("favoritosUpdated"));
     } catch (err) {
       console.error(err);
-      mostrarToast(err.message || 'Error al actualizar favoritos');
+      mostrarToast(err.message || "Error al actualizar favoritos");
     }
   };
 
@@ -73,32 +96,36 @@ export default function DetalleInmueblesPage() {
             <div className="topbar-actions">
               {/* Botón Guardar en favoritos */}
               {esInquilino && (
-              <button
-                className={`topbar-btn prop-fav-btn ${esFavorito ? 'active' : ''}`}
-                id="propFavBtn"
-                aria-pressed={esFavorito}
-                aria-label={esFavorito ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
-                onClick={handleToggleFavorito}
-              >
-                <span className="fav-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill={esFavorito ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                </span>
+                <button
+                  className={`topbar-btn prop-fav-btn ${esFavorito ? "active" : ""}`}
+                  id="propFavBtn"
+                  aria-pressed={esFavorito}
+                  aria-label={
+                    esFavorito
+                      ? "Eliminar de favoritos"
+                      : "Guardar en favoritos"
+                  }
+                  onClick={handleToggleFavorito}
+                >
+                  <span className="fav-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill={esFavorito ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </span>
 
-                {esFavorito ? 'Guardado' : 'Guardar'}
-              </button>
+                  {esFavorito ? "Guardado" : "Guardar"}
+                </button>
               )}
 
               {/* Botón Compartir */}
@@ -135,8 +162,8 @@ export default function DetalleInmueblesPage() {
                 id="topbar-contactar"
                 onClick={() => {
                   document
-                    .getElementById('contacto-asesor')
-                    ?.scrollIntoView({ behavior: 'smooth' });
+                    .getElementById("contacto-asesor")
+                    ?.scrollIntoView({ behavior: "smooth" });
                 }}
               >
                 <svg
@@ -160,17 +187,17 @@ export default function DetalleInmueblesPage() {
         </div>
       </div>
 
-      <GaleriaInmueble imagenes={propiedad.imagenes} titulo={propiedad.titulo} />
+      <GaleriaInmueble
+        imagenes={propiedad.imagenes}
+        titulo={propiedad.titulo}
+      />
 
       <section>
         <div className="container">
           <div className="detail-layout">
             <FichaTecnica propiedad={propiedad} />
 
-            <ContactoAsesor
-              propiedad={propiedad}
-              mostrarToast={mostrarToast}
-            />
+            <ContactoAsesor propiedad={propiedad} mostrarToast={mostrarToast} />
           </div>
         </div>
       </section>

@@ -2,7 +2,8 @@
 import * as service from "./inmuebles.service.js";
 
 export const listar = async (req, res, next) => {
-  try {//prop activas
+  try {
+    //prop activas
     const filtros = req.query;
     const propiedades = await service.listar(filtros, false);
     return res.status(200).json(propiedades);
@@ -11,20 +12,32 @@ export const listar = async (req, res, next) => {
   }
 };
 
-export const listarPanel = async (req, res, next) => {//todas las prop asignadas a un agente
+export const listarPanel = async (req, res, next) => {
   try {
     const filtros = req.query;
-    const agenteId = req.usuario.id; 
+    const { rol, id } = req.usuario;
 
-    const propiedades = await service.listar(filtros, true, agenteId);
+    let propiedades = [];
+
+    if (rol === "agente") {
+      propiedades = await service.listar(filtros, true, id, null);
+    } else if (rol === "admin") {
+      propiedades = await service.listar(filtros, true, null, null);
+    } else if (rol === "propietario") {
+      propiedades = await service.listar(filtros, true, null, id);
+    } else {
+      return res.status(403).json({ error: "Acceso no autorizado al panel" });
+    }
 
     return res.status(200).json(propiedades);
   } catch (err) {
     next(err);
   }
 };
+
 export const obtener = async (req, res, next) => {
-  try {//detalle prop act
+  try {
+    //detalle prop act
     const { id } = req.params;
     const propiedad = await service.obtener(id, false);
     if (!propiedad || propiedad == null) {
@@ -37,16 +50,19 @@ export const obtener = async (req, res, next) => {
 };
 
 export const obtenerPanel = async (req, res, next) => {
-  try {//detalle prop act o inac
+  try {
+    //detalle prop act o inac
     const { id } = req.params;
     const propiedad = await service.obtener(id, true);
 
     if (!propiedad || propiedad == null) {
-      return res.status(404).json({ error: 'Propiedad no encontrada' });
+      return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
-    if (propiedad.agente_id !== req.usuario.id) {
-      return res.status(403).json({ error: 'No tenés permisos para ver esta propiedad' });
+    if ((req.usuario.rol == 'agente' && propiedad.agente_id !== req.usuario.id) || req.usuario.rol != 'admin') {
+      return res
+        .status(403)
+        .json({ error: "No tenés permisos para ver esta propiedad" });
     }
 
     return res.status(200).json(propiedad);
@@ -62,17 +78,21 @@ export const crear = async (req, res, next) => {
     //procesar fotos subidas
     let imagenes = [];
     if (req.files && req.files.length > 0) {
-      imagenes = req.files.map((file, index) => ({//si subio varias
+      imagenes = req.files.map((file, index) => ({
+        //si subio varias
         url: `/img/propiedades/${file.filename}`,
         es_principal: index === 0,
         orden: index + 1,
       }));
-    } else if (req.file) {//si subio solo una
-      imagenes = [{
-        url: `/img/propiedades/${req.file.filename}`,
-        es_principal: true,
-        orden: 1,
-      }];
+    } else if (req.file) {
+      //si subio solo una
+      imagenes = [
+        {
+          url: `/img/propiedades/${req.file.filename}`,
+          es_principal: true,
+          orden: 1,
+        },
+      ];
     }
 
     const {
@@ -89,7 +109,7 @@ export const crear = async (req, res, next) => {
       banos,
       m2,
       estado_comercial,
-      estado_visibilidad
+      estado_visibilidad,
     } = req.body;
 
     const datosPropiedad = {
@@ -135,9 +155,10 @@ export const actualizar = async (req, res, next) => {
         orden: index + 1,
       }));
     } else if (req.body.imagenes) {
-      imagenesProcesadas = typeof req.body.imagenes === 'string'
-        ? JSON.parse(req.body.imagenes)
-        : req.body.imagenes;
+      imagenesProcesadas =
+        typeof req.body.imagenes === "string"
+          ? JSON.parse(req.body.imagenes)
+          : req.body.imagenes;
     }
 
     const {
@@ -154,7 +175,7 @@ export const actualizar = async (req, res, next) => {
       banos,
       m2,
       estado_comercial,
-      estado_visibilidad
+      estado_visibilidad,
     } = req.body;
 
     const datosPropiedad = {
@@ -178,11 +199,14 @@ export const actualizar = async (req, res, next) => {
     const resultado = await service.actualizar(id, datosPropiedad, agenteId);
 
     if (resultado === null) {
-      return res.status(404).json({ error: 'Propiedad no encontrada' });
+      return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
-    if (resultado.forbidden) {//si el id del agente logeado no coincide con el id del agente de la prop
-      return res.status(403).json({ error: 'No tenés permisos para modificar esta propiedad'  });
+    if (resultado.forbidden) {
+      //si el id del agente logeado no coincide con el id del agente de la prop
+      return res
+        .status(403)
+        .json({ error: "No tenés permisos para modificar esta propiedad" });
     }
 
     if (resultado.error) {
@@ -203,20 +227,22 @@ export const eliminar = async (req, res, next) => {
     const resultado = await service.eliminar(id, agenteId);
 
     if (resultado === null) {
-      return res.status(404).json({ error: 'Propiedad no encontrada' });
+      return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
     if (resultado.forbidden) {
-      return res.status(403).json({ error: 'No tenés permisos para eliminar esta propiedad' });
+      return res
+        .status(403)
+        .json({ error: "No tenés permisos para eliminar esta propiedad" });
     }
-    
+
     if (resultado.error) {
       return res.status(400).json({ error: resultado.error });
     }
 
     return res.status(200).json({
-      mensaje: 'Propiedad desactivada correctamente',
-      propiedad: resultado
+      mensaje: "Propiedad desactivada correctamente",
+      propiedad: resultado,
     });
   } catch (err) {
     next(err);
@@ -231,11 +257,13 @@ export const activar = async (req, res, next) => {
     const resultado = await service.activar(id, agenteId);
 
     if (resultado === null) {
-      return res.status(404).json({ error: 'Propiedad no encontrada' });
+      return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
     if (resultado.forbidden) {
-      return res.status(403).json({ error: 'No tenés permisos para activar esta propiedad' });
+      return res
+        .status(403)
+        .json({ error: "No tenés permisos para activar esta propiedad" });
     }
 
     if (resultado.error) {
@@ -243,8 +271,8 @@ export const activar = async (req, res, next) => {
     }
 
     return res.status(200).json({
-      mensaje: 'Propiedad reactivada correctamente',
-      propiedad: resultado
+      mensaje: "Propiedad reactivada correctamente",
+      propiedad: resultado,
     });
   } catch (err) {
     next(err);
@@ -255,16 +283,20 @@ export const activar = async (req, res, next) => {
 export const obtenerHistorial = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const usuario = req.usuario; 
+    const usuario = req.usuario;
 
     const resultado = await service.obtenerHistorialPrecios(id, usuario);
 
     if (resultado === null) {
-      return res.status(404).json({ error: 'Inmueble no encontrado' });
+      return res.status(404).json({ error: "Inmueble no encontrado" });
     }
 
     if (resultado.forbidden) {
-      return res.status(403).json({ error: 'No tenés permisos para ver el historial de este inmueble' });
+      return res
+        .status(403)
+        .json({
+          error: "No tenés permisos para ver el historial de este inmueble",
+        });
     }
 
     return res.status(200).json(resultado);
@@ -280,7 +312,7 @@ export const eliminarImagen = async (req, res, next) => {
 
     await service.eliminarImagen(id);
 
-    return res.status(200).json({ mensaje: 'Imagen eliminada correctamente' });
+    return res.status(200).json({ mensaje: "Imagen eliminada correctamente" });
   } catch (err) {
     next(err);
   }

@@ -13,6 +13,7 @@ const CATEGORIAS_INMUEBLE = [
 export default function ModalFormularioInmuebles(props) {
   const { mostrar, onCerrar } = props;
   const {
+    formRef,
     formData,
     propietarios,
     errores,
@@ -63,7 +64,7 @@ export default function ModalFormularioInmuebles(props) {
           </div>
 
           {/* Body */}
-          <div className="modal-body p-4 bg-light">
+          <div className="modal-body p-4 bg-light"  ref={formRef}>
             {errores.global && (
               <div className="alert alert-danger rounded-3 small py-2 mb-3">
                 {errores.global}
@@ -258,6 +259,7 @@ export default function ModalFormularioInmuebles(props) {
                   value={formData.ambientes}
                   onChange={handleChange}
                   className="col-md-4"
+                  required
                 />
 
                 <FormInput
@@ -268,6 +270,7 @@ export default function ModalFormularioInmuebles(props) {
                   value={formData.banos}
                   onChange={handleChange}
                   className="col-md-4"
+                  required
                 />
 
                 <FormInput
@@ -290,9 +293,9 @@ export default function ModalFormularioInmuebles(props) {
                   <input
                     id="imagenes"
                     type="file"
-                    accept="image/*"
+                    accept="image/png, image/jpeg, image/webp"
                     multiple
-                    className="form-control rounded-3 py-2"
+                    className= {`form-control rounded-3 py-2 ${errores.imagenes ? "is-invalid" : "" }`}
                     onChange={handleFileChange}
                   />
                   {errores.imagenes ? (

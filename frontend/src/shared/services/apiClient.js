@@ -55,7 +55,9 @@ async function request(method, endpoint, body, options = {}) {
   // Interceptor de request: headers por defecto + token si hay sesión activa
   const headers = { Accept: 'application/json', ...headersExtra }
   // FormData (subida de archivos): el navegador arma el Content-Type multipart con su boundary
-  const esFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  const esFormData = 
+  typeof FormData !== 'undefined' && 
+  (body instanceof FormData || (body && typeof body.append === 'function'));
   if (body !== undefined && !esFormData) headers['Content-Type'] = 'application/json'
 
   const token = obtenerToken()

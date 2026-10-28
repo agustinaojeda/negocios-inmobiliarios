@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import '../styles/GaleriaInmueble.css';
+import { obtenerUrlImagen } from '../../../shared/utils/imagenUrl';
 
 export default function GaleriaInmueble({ imagenes = [], titulo = '' }) {
   const [indiceActual, setIndiceActual] = useState(0);
 
   const listaImagenes = Array.isArray(imagenes) && imagenes.length > 0
-    ? imagenes.map(img => (typeof img === 'string' ? img : img.url))
+    ? imagenes.map(img => obtenerUrlImagen(img.url))
     : [];
 
-  const fotoActual = listaImagenes[indiceActual] || '/placeholder.jpg';
+  const fotoActual = listaImagenes[indiceActual];
 
   const siguienteImagen = () => {
     if (listaImagenes.length === 0) return;

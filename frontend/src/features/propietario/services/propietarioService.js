@@ -1,4 +1,6 @@
 import { obtenerSesion, obtenerTodosLosUsuarios } from '../../auth/services/authService'
+import { obtenerPropiedades } from '../../inmuebles'
+import { obtenerTodasLasPropiedades } from '../../agente/services/agenteService'
 
 const URL_BASE = '/data'
 
@@ -10,43 +12,24 @@ export async function obtenerCitas() {
   return respuesta.json()
 }
 
-export async function obtenerPropiedades() {
-  const respuesta = await fetch(`${URL_BASE}/propiedades.json`)
-  if (!respuesta.ok) {
-    throw new Error('No se pudieron obtener las propiedades')
-  }
-  return respuesta.json()
-}
-
-
-export async function obtenerMisPropiedadesDetalladas(propietarioId = null) {
-  let idBuscado = propietarioId || obtenerSesion()?.id
-  if (!idBuscado) return []
-
-  const [propiedades, usuarios] = await Promise.all([
-    obtenerPropiedades(),
-    obtenerTodosLosUsuarios()
-  ])
-
-  const misPropiedades = propiedades.filter((p) => p.propietarioId === idBuscado)
+export async function obtenerMisPropiedadesDetalladas() {
+  const misPropiedades = await obtenerTodasLasPropiedades();
 
   return misPropiedades.map((p) => {
-    const agente = usuarios.find((u) => u.id === p.agenteId)
-
-    let dias = p.diasPublicada
-    if (!dias && p.fechaPublicacion) {
-      const diff = new Date() - new Date(p.fechaPublicacion)
-      dias = Math.floor(diff / (1000 * 60 * 60 * 24))
+    let dias = p.diasPublicada;
+    if (!dias && p.fecha_creacion) {
+      const diff = new Date() - new Date(p.fecha_creacion);
+      dias = Math.floor(diff / (1000 * 60 * 60 * 24));
     }
 
     return {
       ...p,
       diasPublicada: dias || 0,
-      agenteNombre: agente ? agente.nombre : 'Sin asesor asignado',
-      agenteEmail: agente?.email || null,
-      agenteTelefono: agente?.telefono || null
-    }
-  })
+      agenteNombre: p.nombre_agente ? p.nombre_agente : 'Sin asesor asignado',
+      agenteEmail: p.email_agente || null,
+      agenteTelefono: p.telefono_agente || null, 
+    };
+  });
 }
 
 export async function obtenerMisCitasDetalladas(propietarioId = null) {

@@ -1,4 +1,5 @@
 import { obtenerSesion, obtenerTodosLosUsuarios } from '../../auth/services/authService'
+import { apiClient } from '../../../shared/services/apiClient'
 import { obtenerToken } from '../../../shared/services/apiClient'
 
 const URL_BASE2 = '/data'
@@ -34,19 +35,7 @@ function guardarCitasLocal(citas) {
  */
 export async function obtenerTodasLasPropiedades() {
   try {
-    const res = await fetch(`${URL_BASE}/inmuebles/panel`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...obtenerHeadersAuth(),
-      },
-    })
-
-    const datos = await res.json()
-
-    if (!res.ok) {
-      throw new Error(datos.error || 'Error al obtener la lista de inmuebles')
-    }
-
+    const datos = await apiClient.get(`/inmuebles/panel`);
     return Array.isArray(datos) ? datos : datos.propiedades || []
   } catch (err) {
     console.warn('No se pudo cargar propiedades.json inicial:', err)
@@ -56,7 +45,7 @@ export async function obtenerTodasLasPropiedades() {
 /**
  * Obtiene las propiedades asignadas a un agente
  */
-export async function obtenerPropiedadesAgente(agenteId) {
+export async function obtenerPropiedadesAgente() {
   const propiedades = await obtenerTodasLasPropiedades()
   return propiedades
 
@@ -66,39 +55,26 @@ export async function obtenerPropiedadesAgente(agenteId) {
  * Guarda (crea o edita) una propiedad asignada al agente
  */
 export async function guardarPropiedadAgente(propiedadFormData) {
-  const id = propiedadFormData.get('id');
-  const esEdicion = Boolean(id);
+  try {
+    const id = propiedadFormData.get('id');
+    const esEdicion = Boolean(id);
 
-  const url = esEdicion ? `${URL_BASE}/inmuebles/${id}` : `${URL_BASE}/inmuebles`;
-  const method = esEdicion ? 'PUT' : 'POST';
+    // Se pasa propiedadFormData directamente como segundo argumento
+    const datos = esEdicion
+      ? await apiClient.put(`/inmuebles/${id}`, propiedadFormData)
+      : await apiClient.post('/inmuebles', propiedadFormData);
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      ...obtenerHeadersAuth(),
-    },
-    body: propiedadFormData,
-  });
-
-  const datos = await res.json();
-  if (!res.ok) throw new Error(datos.error || 'Error al guardar el inmueble');
-  return datos;
+    return datos;
+  } catch (error) {
+    throw new Error(error.message || 'Error al guardar el inmueble');
+  }
 }
-
 /**
  * Obtiene la lista de propietarios para el selector del modal
- * AJUSTAR CUANDO ESTE LISTO LO DE AUTH POR AHORA NO ANDA
  */
 export async function obtenerPropietarios() {
   try {
-    const res = await fetch(`${URL_BASE}/usuarios`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...obtenerHeadersAuth(),
-      },
-    })
-    if (!res.ok) throw new Error('Error al obtener la lista de propietarios')
-    const datos = await res.json()
+    const datos = await apiClient.get('/usuarios/');
     const lista = Array.isArray(datos) ? datos : datos.usuarios || []
     return lista.filter((u) => u.rol === 'propietario')
   } catch (err) {
@@ -111,48 +87,30 @@ export async function obtenerPropietarios() {
  * Eliminación de una propiedad asignada
  */
 export async function eliminarPropiedadAgente(propiedadId) {
-  const res = await fetch(`${URL_BASE}/inmuebles/${propiedadId}`, {
-    method: 'DELETE',
-    headers: obtenerHeadersAuth(),
-  })
-
-  if (!res.ok) {
-    const datos = await res.json().catch(() => ({}))
-    throw new Error(datos.error || 'Error al eliminar la propiedad')
+  try{
+    return await apiClient.delete(`/inmuebles/${propiedadId}`);
+  }catch(error){
+    throw new Error('Error al eliminar la propiedad')
   }
-
-  return true
 }
 
 /**
  * Reactiva una propiedad previamente inhabilitada
  */
 export async function activarPropiedadAgente(propiedadId) {
-  const res = await fetch(`${URL_BASE}/inmuebles/${propiedadId}/activar`, {
-    method: 'PATCH',
-    headers: obtenerHeadersAuth(),
-  })
-
-  if (!res.ok) {
-    const datos = await res.json().catch(() => ({}))
-    throw new Error(datos.error || 'Error al activar la propiedad')
+  try{
+    return await apiClient.patch(`/inmuebles/${propiedadId}/activar`,{propiedadId});
+  }catch(error){
+    throw new Error('Error al activar la propiedad')
   }
-
-  return true
 }
 
 export async function eliminarImagenPropiedad(imagenId) {
-  const res = await fetch(`${URL_BASE}/inmuebles/imagenes/${imagenId}`, {
-    method: 'DELETE',
-    headers: obtenerHeadersAuth(),
-  });
-
-  if (!res.ok) {
-    const datos = await res.json().catch(() => ({}));
-    throw new Error(datos.error || 'Error al eliminar la imagen');
+  try{
+    return await apiClient.delete(`/inmuebles/imagenes/${imagenId}`);
+  }catch(error){
+    throw new ('Error al eliminar la imagen');
   }
-
-  return true;
 }
 
 // --- AGENDA Y GESTIÓN DE CITAS ---
@@ -162,19 +120,8 @@ export async function eliminarImagenPropiedad(imagenId) {
  */
 export async function obtenerCitasAgente() {
   try {
-    const res = await fetch(`${URL_BASE}/citas`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...obtenerHeadersAuth(),
-      },
-    });
+    const datos = await apiClient.get('/citas');
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Error al obtener citas del agente');
-    }
-
-    const datos = await res.json();
     const lista = datos.citas || [];
 
     return lista.map((c) => ({
@@ -203,20 +150,10 @@ export async function obtenerCitasAgente() {
  * Actualiza el estado de una cita (confirmada, cancelada, completada, pendiente) en la BD
  */
 export async function actualizarEstadoCita(citaId, nuevoEstado) {
-  const res = await fetch(`${URL_BASE}/citas/${citaId}/estado`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      ...obtenerHeadersAuth(),
-    },
-    body: JSON.stringify({ estado: nuevoEstado }),
-  });
-
-  const datos = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(datos.error || 'Error al actualizar el estado de la visita');
+  try{
+    const datos = await apiClient.patch(`/citas/${citaId}/estado`,{estado : nuevoEstado});
+    return datos.cita;
+  }catch(error){
+    throw new Error('Error al actualizar el estado de la visita');
   }
-
-  return datos.cita;
 }

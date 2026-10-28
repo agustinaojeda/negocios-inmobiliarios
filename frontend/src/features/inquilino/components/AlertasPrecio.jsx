@@ -22,7 +22,7 @@ export default function AlertasPrecio() {
     tipoOperacion === "todas"
       ? todas
       : todas.filter(
-          (p) => p.tipo?.toLowerCase() === tipoOperacion.toLowerCase(),
+          (p) => p.estado_comercial?.toLowerCase() === tipoOperacion.toLowerCase(),
         );
 
   const masBaratas = [...filtradasPorOperacion]

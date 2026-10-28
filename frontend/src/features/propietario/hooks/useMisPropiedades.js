@@ -21,9 +21,9 @@ export function useMisPropiedades(propietarioId = null) {
         setCargando(true)
         setError(null)
 
-        const [propsData, citasData] = await Promise.all([
+        const [propsData, citasData = []] = await Promise.all([//cambiar una vez que este lo de citas 
           obtenerMisPropiedadesDetalladas(propietarioId),
-          obtenerMisCitasDetalladas(propietarioId)
+          //obtenerMisCitasDetalladas(propietarioId)
         ])
 
         if (activo) {
@@ -49,7 +49,7 @@ export function useMisPropiedades(propietarioId = null) {
   const propiedadesFiltradas = useMemo(() => {
     if (filtroEstadoProp === 'todas') return propiedades
     return propiedades.filter(
-      (p) => p.estado?.toLowerCase() === filtroEstadoProp.toLowerCase()
+      (p) => p.estado_comercial?.toLowerCase() === filtroEstadoProp.toLowerCase()
     )
   }, [propiedades, filtroEstadoProp])
 

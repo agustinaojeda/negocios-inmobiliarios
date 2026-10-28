@@ -27,7 +27,7 @@ router.put('/perfil', verificarToken, subirFoto, controller.actualizarPerfil);
 router.patch('/cambiar-password', verificarToken, controller.cambiarPassword);
 
 //admin
-router.get('/', verificarToken, verificarRol('admin'), controller.listarUsuarios);
+router.get('/', verificarToken, verificarRol('admin','agente'), controller.listarUsuarios);
 router.patch('/:id/estado', verificarToken, verificarRol('admin'), controller.cambiarEstado);
 
 export default router;

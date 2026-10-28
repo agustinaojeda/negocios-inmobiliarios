@@ -6,9 +6,9 @@ export function useFavoritos() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  const cargarFavoritos = async () => {
+  const cargarFavoritos = async (mostrarSpinner= false) => {
     try {
-      setCargando(true);
+      if (mostrarSpinner) setCargando(true);
       setError(null);
       const datos = await obtenerFavoritos();
       setFavoritos(datos);
@@ -18,15 +18,17 @@ export function useFavoritos() {
       setError(err.message || "No se pudieron obtener los favoritos");
 
     } finally {
-      setCargando(false);
+      if (mostrarSpinner) setCargando(false);
     }
   };
 
   useEffect(() => {
-    cargarFavoritos();
+    cargarFavoritos(true);
+
     //para escuchar si el usuario agrega o quita alguno
-    window.addEventListener("favoritosUpdated", cargarFavoritos);
-    return () => window.removeEventListener("favoritosUpdated", cargarFavoritos);
+    const alActualizar = () => cargarFavoritos(false);
+    window.addEventListener("favoritosUpdated", alActualizar);
+    return () => window.removeEventListener("favoritosUpdated", alActualizar);
   }, []);
 
   return {

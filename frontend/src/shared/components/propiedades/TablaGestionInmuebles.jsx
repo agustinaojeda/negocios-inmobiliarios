@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { formatearPrecio } from "../../utils/formato";
 import { obtenerUrlImagen } from "../../../shared/utils/imagenUrl";
 
@@ -10,6 +11,7 @@ export default function TablaGestionInmuebles({
   propiedades = [],
   onEditar,
   onAlternarEstado,
+  admin = false,
 }) {
   if (!propiedades || propiedades.length === 0) return null;
 
@@ -21,9 +23,10 @@ export default function TablaGestionInmuebles({
             <th>Inmueble</th>
             <th>Zona</th>
             <th>Tipo / Op.</th>
-            <th>Precio</th>
+            <th>Precio</th>            
+            {admin && <th>Agente a cargo</th>}
             <th>Estado</th>
-            <th className="text-end">Acciones</th>
+            {!admin && <th className="text-end">Acciones</th>}
           </tr>
         </thead>
         <tbody>
@@ -38,26 +41,31 @@ export default function TablaGestionInmuebles({
               <tr key={p.id}>
                 {/* Foto + Título + Dirección */}
                 <td>
-                  <div className="d-flex align-items-center gap-2">
-                    <img
-                      src={obtenerUrlImagen(urlImagen)}
-                      alt={p.titulo}
-                      className="rounded-3 object-fit-cover border"
-                      style={{ width: "45px", height: "45px" }}
-                      onError={(e) => {
-                        e.target.src = "/img/propiedades/prop1.jpg";
-                      }}
-                    />
-                    <div>
-                      <div
-                        className="fw-semibold text-truncate"
-                        style={{ maxWidth: "220px" }}
-                      >
-                        {p.titulo}
+                  <Link
+                    to={`/inmueble/${p.id}`} target="_blank" rel="noopener noreferrer"
+                    className="text-decoration-none h-100 d-block text-dark"
+                  >
+                    <div className="d-flex align-items-center gap-2">
+                      <img
+                        src={obtenerUrlImagen(urlImagen)}
+                        alt={p.titulo}
+                        className="rounded-3 object-fit-cover border"
+                        style={{ width: "45px", height: "45px" }}
+                        onError={(e) => {
+                          e.target.src = "/img/propiedades/prop1.jpg";
+                        }}
+                      />
+                      <div>
+                        <div
+                          className="fw-semibold text-truncate"
+                          style={{ maxWidth: "220px" }}
+                        >
+                          {p.titulo}
+                        </div>
+                        <small className="text-muted">{p.direccion}</small>
                       </div>
-                      <small className="text-muted">{p.direccion}</small>
                     </div>
-                  </div>
+                  </Link>
                 </td>
 
                 {/* Zona */}
@@ -72,9 +80,14 @@ export default function TablaGestionInmuebles({
 
                 {/* Precio */}
                 <td className="fw-bold">
-                  {p.moneda == 'USD' ? formatearPrecio(p.precio)
+                  {p.moneda == "USD"
+                    ? formatearPrecio(p.precio)
                     : formatearPrecio(p.precio, p.moneda)}
                 </td>
+
+                
+                  {admin &&
+                  <td>{p.agente_nombre} {p.agente_apellido}</td>}
 
                 {/* Estado: Selector de Visibilidad o Badge */}
                 <td>
@@ -98,16 +111,18 @@ export default function TablaGestionInmuebles({
                       Editar
                     </button>
                   )}
-                 {onAlternarEstado && (
+                  {onAlternarEstado && (
                     <button
                       className={`btn btn-sm rounded-pill px-2 ${
-                        estadoActual === 'activo'
-                          ? 'btn-outline-danger'
-                          : 'btn-outline-success'
+                        estadoActual === "activo"
+                          ? "btn-outline-danger"
+                          : "btn-outline-success"
                       }`}
-                      onClick={() => onAlternarEstado(p.id, p.titulo, estadoActual)}
+                      onClick={() =>
+                        onAlternarEstado(p.id, p.titulo, estadoActual)
+                      }
                     >
-                      {estadoActual === 'activo' ? 'Baja' : 'Alta'}
+                      {estadoActual === "activo" ? "Baja" : "Alta"}
                     </button>
                   )}
                 </td>

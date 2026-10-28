@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 import {
   obtenerPropietarios,
   eliminarImagenPropiedad,
@@ -36,6 +36,23 @@ export function useModalFormularioInmueble({
   const [guardando, setGuardando] = useState(false);
 
   const esEdicion = Boolean(propiedadEditar);
+
+  const formRef = useRef(null);
+
+  const focarPrimerError = () => {
+    if (!formRef.current) return;
+
+    const primerElementoConError = formRef.current.querySelector(
+      ".is-invalid, [name].border-danger, input:invalid, invalid-feedback"
+    );
+
+    if (primerElementoConError) {
+      primerElementoConError.focus({ preventScroll: false });
+      primerElementoConError.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      formRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   //carga de propietarios
   useEffect(() => {
@@ -103,11 +120,37 @@ export function useModalFormularioInmueble({
 
   // ACUMULA FOTOS NUEVAS SIN REEMPLAZAR
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    const TIPOS_IMAGEN_PERMITIDOS = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/jpg",
+    ];
+    const rawFiles = Array.from(e.target.files);
+    if (rawFiles.length === 0) return;
+
+    const files = rawFiles.filter((file) =>
+      TIPOS_IMAGEN_PERMITIDOS.includes(file.type),
+    );
+
+    if (files.length === 0) {
+      setErrores((prev) => ({
+        ...prev,
+        imagenes:
+          "Por favor, seleccioná archivos de imagen válidos (JPG, PNG, WEBP).",
+      }));
+      e.target.value = "";
+      return;
+    }
+
+    if (files.length < rawFiles.length) {
+      alert(
+        "Se omitieron algunos archivos porque no tienen un formato de imagen válido.",
+      );
+    }
 
     const totalProyectado =
-      imagenesExistentes.length + archivosImagenes.length + files.length; //img que ya estan + img que subio + img que acaba de subir
+      imagenesExistentes.length + archivosImagenes.length + files.length;
 
     if (totalProyectado > 10) {
       const permitidas =
@@ -116,10 +159,10 @@ export function useModalFormularioInmueble({
         ...prev,
         imagenes: `Límite superado. Podés agregar como máximo ${permitidas} foto(s) más.`,
       }));
+      e.target.value = "";
       return;
     }
 
-    //limpiar errores
     setErrores((prev) => ({ ...prev, imagenes: "" }));
 
     setArchivosImagenes((prev) => [...prev, ...files]);
@@ -127,6 +170,8 @@ export function useModalFormularioInmueble({
       ...prev,
       ...files.map((file) => ({ file, url: URL.createObjectURL(file) })),
     ]);
+
+    e.target.value = "";
   };
 
   const handleRemoveImage = async (item, esExistente) => {
@@ -141,6 +186,9 @@ export function useModalFormularioInmueble({
         alert(err.message || "No se pudo eliminar la imagen");
       }
     } else {
+      if (item.url) {
+        URL.revokeObjectURL(item.url);
+      }
       setArchivosImagenes((prev) => prev.filter((f) => f !== item.file));
       setPreviewsLocales((prev) => prev.filter((p) => p.url !== item.url));
     }
@@ -177,7 +225,10 @@ export function useModalFormularioInmueble({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validar()) return;
+    if (!validar()) {
+      setTimeout(focarPrimerError, 0);
+      return;
+    }
 
     setGuardando(true);
     try {
@@ -214,12 +265,14 @@ export function useModalFormularioInmueble({
     } catch (err) {
       console.error("Error al guardar propiedad:", err);
       setErrores({ global: err.message || "Ocurrió un error al guardar" });
+      setTimeout(focarPrimerError, 0);
     } finally {
       setGuardando(false);
     }
   };
 
   return {
+    formRef,
     formData,
     propietarios,
     errores,

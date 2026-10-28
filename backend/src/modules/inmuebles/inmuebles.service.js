@@ -5,8 +5,8 @@ import * as repository from "./inmuebles.repository.js";
 import fs from "fs/promises";
 import path from "path";
 
-export const listar = async (filtros, esAgente = false, agenteId = null) => {
-  const propiedades = await repository.listar(filtros, esAgente, agenteId);
+export const listar = async (filtros, esAgente = false, agenteId = null, propietarioId = null) => {
+  const propiedades = await repository.listar(filtros, esAgente, agenteId, propietarioId);
 
   if (!propiedades || propiedades.length === 0) {
     return [];

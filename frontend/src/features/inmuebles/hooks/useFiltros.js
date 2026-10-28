@@ -17,7 +17,7 @@ export function useFiltros(propiedades){
     if (zona && zona !== 'todas') params.set('zona', zona);
     if (busqueda.trim()) params.set('buscar', busqueda.trim());
 
-    setSearchParams(params, { replace: true });
+    setSearchParams(params, { replace: true, preventScrollReset: true });
   }, [categoria, tipo, zona, busqueda, setSearchParams]);
 
     const lista = propiedades ?? [];

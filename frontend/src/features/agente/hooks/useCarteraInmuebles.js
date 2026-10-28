@@ -13,7 +13,7 @@ export function useCarteraInmuebles(agenteId) {
     datos: iniciales = [],
     cargando,
     error,
-  } = useFetch(obtenerPropiedadesAgente, agenteId);
+  } = useFetch(obtenerPropiedadesAgente);
 
   const [propiedades, setPropiedades] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState("todas");
