@@ -50,16 +50,16 @@ export async function obtenerPropiedadPorId(id) {
       throw new Error("No tenés permisos para ver esta propiedad");
     }
   } else {
-    try{
+    try {
       return await apiClient.get(`/inmuebles/${id}`);
-    }catch(error){
+    } catch (error) {
       throw new Error("La propiedad que buscás no existe");
     }
   }
 }
 
 export async function obtenerUltimas(limite = 3) {
-  //devuelve las ultimas tres cargadas y disponibles
+  // devuelve las ultimas tres cargadas y disponibles
   const propiedades = await obtenerPropiedadesDisponibles();
   return propiedades.slice(-limite).reverse();
 }
@@ -72,23 +72,35 @@ export async function obtenerPropiedades() {
 export async function obtenerInmueblesAsignadosPorUsuario(usuario) {
   if (!usuario) return [];
 
-  const [propiedades, usuarios] = await Promise.all([
-    obtenerPropiedades(),
-    obtenerTodosLosUsuarios(),
-  ]);
+  // Si es inquilino, sus inmuebles asignados son las operaciones de compra o alquiler cerradas
+  if (usuario.rol === 'inquilino') {
+    try {
+      const respuesta = await apiClient.get('/operaciones');
+      const operaciones = respuesta.operaciones || [];
 
-  const asignados = propiedades.filter((p) => {
-    if (usuario.rol === "inquilino") return p.clienteId === usuario.id;
-    if (usuario.rol === "propietario") return p.propietarioId === usuario.id;
+      return operaciones.map((op) => ({
+        id: op.propiedad_id,
+        titulo: op.propiedad_titulo,
+        direccion: op.propiedad_direccion,
+        zona: op.propiedad_zona,
+        tipo: op.tipo_operacion, // 'venta' o 'alquiler'
+        precio: Number(op.monto_cierre),
+        moneda: op.moneda,
+        img: op.propiedad_img || '/img/propiedades/prop1.jpg',
+        imagenes: [op.propiedad_img || '/img/propiedades/prop1.jpg'],
+        agenteNombre: `${op.agente_nombre || ''} ${op.agente_apellido || ''}`.trim() || 'Sin asesor asignado',
+        clienteNombre: `${op.cliente_nombre || ''} ${op.cliente_apellido || ''}`.trim(),
+      }));
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // Si es admin o propietario, muestra su filtro correspondiente
+  const propiedades = await obtenerPropiedadesDisponibles();
+  return propiedades.filter((p) => {
+    if (usuario.rol === "propietario") return p.propietario_id === usuario.id;
     if (usuario.rol === "admin") return true;
     return false;
-  });
-
-  return asignados.map((p) => {
-    const agente = usuarios.find((u) => u.id === p.agenteId);
-    return {
-      ...p,
-      agenteNombre: agente ? agente.nombre : "Sin asesor asignado",
-    };
   });
 }
