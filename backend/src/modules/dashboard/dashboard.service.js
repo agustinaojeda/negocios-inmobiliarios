@@ -16,10 +16,11 @@ export const obtenerMetricas = async (usuario) => {
         const totalCitas = Number(data.citas.total_citas);
         const totalOperaciones = Number(data.operaciones.total_operaciones);
 
-        // Tasa de conversión de visitas a operaciones cerradas
+        // Tasa de conversión de visitas a operaciones cerradas acotada al 100 por pruebas en postman
         const tasaConversion = totalCitas > 0
-            ? Number(((totalOperaciones / totalCitas) * 100).toFixed(1))
+            ? Math.min(100, Number(((totalOperaciones / totalCitas) * 100).toFixed(1)))
             : 0;
+
 
         return {
             rol: 'admin',
@@ -43,9 +44,11 @@ export const obtenerMetricas = async (usuario) => {
     const totalCitas = Number(data.citas.total_citas);
     const totalOperaciones = Number(data.operaciones.total_operaciones);
 
+    // Tasa de conversión acotada a un máximo de 100% p pruebas en postman
     const tasaConversion = totalCitas > 0
-        ? Number(((totalOperaciones / totalCitas) * 100).toFixed(1))
+        ? Math.min(100, Number(((totalOperaciones / totalCitas) * 100).toFixed(1)))
         : 0;
+
 
     return {
         rol: 'agente',
