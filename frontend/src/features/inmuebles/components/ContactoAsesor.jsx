@@ -55,7 +55,7 @@ export default function ContactoAsesor({ propiedad, mostrarToast }) {
     }
 
     // 1. Validar que el usuario tenga sesión iniciada
-    if (!sesion) {
+    if (!sesion || !sesion.token) {
       mostrarToast('Debés iniciar sesión con tu cuenta para agendar una visita.');
       return;
     }
