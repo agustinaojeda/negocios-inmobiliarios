@@ -59,7 +59,7 @@ export const obtenerPanel = async (req, res, next) => {
       return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
-    if ((req.usuario.rol == 'agente' && propiedad.agente_id !== req.usuario.id) || req.usuario.rol != 'admin') {
+    if ((req.usuario.rol === 'agente' && propiedad.agente_id !== req.usuario.id) || (req.usuario.rol !== 'admin' && req.usuario.rol !== 'agente')) {
       return res
         .status(403)
         .json({ error: "No tenés permisos para ver esta propiedad" });
