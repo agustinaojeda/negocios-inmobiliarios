@@ -1,4 +1,6 @@
 import FormInput from "../../../shared/components/panel/FormInput";
+import Toast from "../../../shared/components/Toast";
+import ModalConfirmar from "../../../shared/components/ModalConfirmar";
 import { useModalFormularioInmueble } from "../hooks/useModalFormularioInmuebles";
 import { obtenerUrlImagen } from "../../../shared/utils/imagenUrl";
 
@@ -25,16 +27,23 @@ export default function ModalFormularioInmuebles(props) {
     imagenesExistentes,
     previewsLocales,
     handleRemoveImage,
+    notificacion,
+    imagenAConfirmar,
+    eliminandoImagen,
+    confirmarEliminarImagen,
+    cancelarEliminarImagen,
   } = useModalFormularioInmueble(props);
 
   if (!mostrar) return null;
 
   return (
-    <div
-      className="modal fade show d-block"
-      tabIndex="-1"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.55)", zIndex: 1055 }}
-    >
+    <>
+      <Toast mensaje={notificacion} />
+      <div
+        className="modal fade show d-block"
+        tabIndex="-1"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.55)", zIndex: 1055 }}
+      >
       <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div className="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
           {/* Header */}
@@ -424,6 +433,20 @@ export default function ModalFormularioInmuebles(props) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Confirmación de borrado de imagen existente */}
+      <ModalConfirmar
+        mostrar={Boolean(imagenAConfirmar)}
+        zIndex={1065}
+        titulo="Eliminar imagen"
+        mensaje="¿Eliminar esta imagen de forma permanente? Esta acción no se puede deshacer."
+        textoConfirmar="Eliminar"
+        variante="danger"
+        cargando={eliminandoImagen}
+        onConfirmar={confirmarEliminarImagen}
+        onCerrar={cancelarEliminarImagen}
+      />
+    </>
   );
 }

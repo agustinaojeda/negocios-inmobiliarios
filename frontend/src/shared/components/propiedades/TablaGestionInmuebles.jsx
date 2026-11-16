@@ -1,88 +1,13 @@
 import { Link } from "react-router";
 import { formatearPrecio } from "../../utils/formato";
 import { obtenerUrlImagen } from "../../../shared/utils/imagenUrl";
+import BotonAccion from "../BotonAccion";
+import { IconoHistorial, IconoEditar, IconoBaja, IconoAlta } from "../Iconos";
 
 const CLASES_ESTADO = {
   activo: "bg-success text-white",
   inactivo: "bg-secondary text-white",
 };
-
-const CLASES_BOTON_ACCION =
-  "btn btn-sm btn-light border rounded-circle p-0 d-inline-flex align-items-center justify-content-center";
-
-const ESTILO_BOTON_ACCION = { width: "32px", height: "32px" };
-
-function BotonAccion({
-  etiqueta,
-  onClick,
-  disabled = false,
-  motivoDeshabilitado,
-  colorIcono = "text-secondary",
-  children,
-}) {
-  const titulo = disabled && motivoDeshabilitado ? motivoDeshabilitado : etiqueta;
-
-  const boton = (
-    <button
-      type="button"
-      className={`${CLASES_BOTON_ACCION} ${colorIcono}`}
-      style={ESTILO_BOTON_ACCION}
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={titulo}
-      title={disabled ? undefined : etiqueta}
-    >
-      {children}
-    </button>
-  );
-
-  if (!disabled) return boton;
-
-  return (
-    <span className="d-inline-flex" title={titulo}>
-      {boton}
-    </span>
-  );
-}
-
-function IconoHistorial() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <polyline points="3 4 3 9 8 9" />
-      <polyline points="12 7 12 12 15 14" />
-    </svg>
-  );
-}
-
-function IconoEditar() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
-    </svg>
-  );
-}
-
-function IconoBaja() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <polyline points="8 12 12 16 16 12" />
-      <line x1="12" y1="8" x2="12" y2="16" />
-    </svg>
-  );
-}
-
-function IconoAlta() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <polyline points="8 12 12 8 16 12" />
-      <line x1="12" y1="16" x2="12" y2="8" />
-    </svg>
-  );
-}
 
 export default function TablaGestionInmuebles({
   propiedades = [],

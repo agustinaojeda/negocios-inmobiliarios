@@ -4,12 +4,9 @@ import GestionUsuarios from '../components/GestionUsuarios'
 import GestionInmuebles from '../components/GestionInmuebles'
 import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
-import Toast from '../../../shared/components/Toast'
 import TablaOperaciones from '../../../shared/components/operaciones/TablaOperaciones'
 import ModalDetalleOperacion from '../../../shared/components/operaciones/ModalDetalleOperacion'
-import ModalRegistrarOperacion from '../../../shared/components/operaciones/ModalRegistrarOperacion'
 import { useFetch } from '../../../shared/hooks/useFetch'
-import { useToast } from '../../../shared/hooks/useToast'
 import { obtenerMetricasDashboard, obtenerOperaciones } from '../services/adminService'
 
 // Vista del Dashboard con métricas y KPIs 
@@ -132,25 +129,12 @@ function SeccionDashboard() {
 
 // Vista del registro de contratos y operaciones formalizadas
 function SeccionContratos() {
-  // "version" se pasa como parámetro a useFetch: al incrementarla se vuelve a
-  // pedir el listado después de registrar una operación.
-  const [version, setVersion] = useState(0)
   const [operacionSeleccionada, setOperacionSeleccionada] = useState(null)
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const { datos: operacionesCargadas, cargando, error } = useFetch(obtenerOperaciones, version)
+  const { datos: operacionesCargadas, cargando, error } = useFetch(obtenerOperaciones)
   const operaciones = operacionesCargadas || []
-  const { mensaje: notificacion, mostrarToast } = useToast()
-
-  const manejarCreada = () => {
-    setModalAbierto(false)
-    setVersion((valor) => valor + 1)
-    mostrarToast('Operación registrada correctamente')
-  }
 
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white position-relative">
-      <Toast mensaje={notificacion} />
-
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
         <div>
           <h2 className="h5 fw-bold mb-1" style={{ color: '#13284c' }}>
@@ -164,14 +148,6 @@ function SeccionContratos() {
           <span className="badge rounded-pill bg-light text-dark border px-3 py-2">
             Total: {operaciones.length}
           </span>
-          <button
-            type="button"
-            className="btn btn-sm btn-primary rounded-pill px-3"
-            style={{ backgroundColor: '#13284c', borderColor: '#13284c' }}
-            onClick={() => setModalAbierto(true)}
-          >
-            Registrar operación
-          </button>
         </div>
       </div>
 
@@ -195,12 +171,6 @@ function SeccionContratos() {
         mostrar={operacionSeleccionada !== null}
         operacionId={operacionSeleccionada}
         onCerrar={() => setOperacionSeleccionada(null)}
-      />
-
-      <ModalRegistrarOperacion
-        mostrar={modalAbierto}
-        onCerrar={() => setModalAbierto(false)}
-        onCreada={manejarCreada}
       />
     </div>
   )

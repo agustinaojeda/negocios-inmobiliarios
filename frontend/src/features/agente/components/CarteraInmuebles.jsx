@@ -5,6 +5,7 @@ import Toast from '../../../shared/components/Toast'
 import TablaGestionInmuebles from '../../../shared/components/propiedades/TablaGestionInmuebles'
 import ModalFormularioInmuebles from './ModalFormularioInmuebles'
 import ModalHistorialPrecios from '../../inmuebles/components/ModalHistorialPrecios'
+import ModalConfirmar from '../../../shared/components/ModalConfirmar'
 import { useCarteraInmuebles } from '../hooks/useCarteraInmuebles'
 import { FiltroPills } from '../../inmuebles'
 import {
@@ -26,9 +27,13 @@ export default function CarteraInmuebles({ agenteId }) {
     modalAbierto,
     propiedadAEditar,
     idsConOperacion,
+    confirmacionEstado,
+    procesandoEstado,
     cambiarEstado,
     guardarPropiedad,
     alternarEstadoPropiedad,
+    confirmarAlternarEstado,
+    cancelarAlternarEstado,
     abrirCrear,
     abrirEditar,
     cerrarModal,
@@ -141,6 +146,32 @@ export default function CarteraInmuebles({ agenteId }) {
         cargando={cargandoHistorial}
         error={errorHistorial}
         onReintentar={() => abrirHistorial(propiedadHistorial)}
+      />
+
+      {/* Confirmación de baja / alta */}
+      <ModalConfirmar
+        mostrar={Boolean(confirmacionEstado)}
+        titulo={
+          confirmacionEstado?.estadoActual === 'activo'
+            ? 'Dar de baja el inmueble'
+            : 'Dar de alta el inmueble'
+        }
+        mensaje={
+          confirmacionEstado?.estadoActual === 'activo'
+            ? `El inmueble "${confirmacionEstado?.titulo || ''}" dejará de aparecer en el catálogo público. Vas a poder darlo de alta más adelante.`
+            : `El inmueble "${confirmacionEstado?.titulo || ''}" volverá a mostrarse en el catálogo público.`
+        }
+        textoConfirmar={
+          confirmacionEstado?.estadoActual === 'activo'
+            ? 'Dar de baja'
+            : 'Dar de alta'
+        }
+        variante={
+          confirmacionEstado?.estadoActual === 'activo' ? 'danger' : 'success'
+        }
+        cargando={procesandoEstado}
+        onConfirmar={confirmarAlternarEstado}
+        onCerrar={cancelarAlternarEstado}
       />
     </div>
   )

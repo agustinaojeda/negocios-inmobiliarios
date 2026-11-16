@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { useFetch } from "../../../shared/hooks/useFetch";
 import { useAlerta } from "../../../shared/hooks/useAlerta";
 import Spinner from "../../../shared/components/Spinner";
@@ -9,6 +8,9 @@ import { listarUsuarios, cambiarEstadoUsuario } from "../../../shared/services/u
 import { obtenerSesion } from "../../auth/services/authService";
 import { resolverUrlImagen } from "../../../shared/config/api";
 import ModalCrearUsuario from "./ModalCrearUsuario";
+import ModalConfirmar from "../../../shared/components/ModalConfirmar";
+import BotonAccion from "../../../shared/components/BotonAccion";
+import { IconoBaja, IconoAlta } from "../../../shared/components/Iconos";
 
 const avatarDefecto = (nombre) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -26,9 +28,9 @@ export default function GestionUsuarios() {
     const [actualizados, setActualizados] = useState({});
     const [procesandoId, setProcesandoId] = useState(null);
     const [mostrarModal, setMostrarModal] = useState(false);
+    const [usuarioAConfirmar, setUsuarioAConfirmar] = useState(null);
     const { alerta, mostrarExito, mostrarError, cerrar } = useAlerta();
 
-    const navigate = useNavigate();
     const idSesion = Number(obtenerSesion()?.id);
 
     if (cargando) return <Spinner texto="Cargando usuarios..." />;
@@ -36,20 +38,20 @@ export default function GestionUsuarios() {
 
     const listaUsuarios = (usuarios || []).map((u) => actualizados[u.id] || u);
 
-    const handleEditar = (usuario) => {
-        navigate(`/admin/usuarios/${usuario.id}`);
+    // PATCH /api/usuarios/:id/estado
+    // Abre el diálogo de confirmación; el PATCH se hace al confirmar
+    const handleCambiarEstado = (usuario) => {
+        setUsuarioAConfirmar(usuario);
     };
 
-    // PATCH /api/usuarios/:id/estado
-    const handleCambiarEstado = async (usuario) => {
-        const nuevoEstado = !usuario.estaActivo;
-        const accion = nuevoEstado ? "activar" : "desactivar";
+    const confirmarCambioEstado = async () => {
+        if (!usuarioAConfirmar) return;
 
-        if (!window.confirm(`¿Seguro que querés ${accion} a ${nombreCompleto(usuario)}?`)) return;
+        const nuevoEstado = !usuarioAConfirmar.estaActivo;
 
         try {
-            setProcesandoId(usuario.id);
-            const actualizado = await cambiarEstadoUsuario(usuario.id, nuevoEstado);
+            setProcesandoId(usuarioAConfirmar.id);
+            const actualizado = await cambiarEstadoUsuario(usuarioAConfirmar.id, nuevoEstado);
             setActualizados((prev) => ({ ...prev, [actualizado.id]: actualizado }));
             mostrarExito(
                 `${nombreCompleto(actualizado)} ahora está ${actualizado.estaActivo ? "activo" : "inactivo"}.`,
@@ -58,6 +60,7 @@ export default function GestionUsuarios() {
             mostrarError(err.message || "No se pudo cambiar el estado del usuario.");
         } finally {
             setProcesandoId(null);
+            setUsuarioAConfirmar(null);
         }
     };
 
@@ -111,7 +114,7 @@ export default function GestionUsuarios() {
                                 <th className="py-3">Teléfono</th>
                                 <th className="py-3">Rol</th>
                                 <th className="py-3">Estado</th>
-                                <th className="py-3">Acciones</th>
+                                <th className="py-3 text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -172,29 +175,42 @@ export default function GestionUsuarios() {
                                                 {usuario.estaActivo ? "Activo" : "Inactivo"}
                                             </span>
                                         </td>
-                                        <td className="py-3 text-nowrap">
-                                            <button
-                                                id={`btn-editar-usuario-${usuario.id}`}
-                                                className="btn btn-sm btn-outline-primary rounded-pill px-3 me-2"
-                                                onClick={() => handleEditar(usuario)}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                id={`btn-estado-usuario-${usuario.id}`}
-                                                className={`btn btn-sm rounded-pill px-3 ${
-                                                    usuario.estaActivo ? "btn-outline-danger" : "btn-outline-success"
-                                                }`}
-                                                onClick={() => handleCambiarEstado(usuario)}
-                                                disabled={esMiCuenta || procesando}
-                                                title={esMiCuenta ? "Tu cuenta" : undefined}
-                                            >
-                                                {procesando
-                                                    ? "Guardando..."
-                                                    : usuario.estaActivo
-                                                    ? "Desactivar"
-                                                    : "Activar"}
-                                            </button>
+                                        <td className="py-3 text-nowrap text-end">
+                                            <div className="d-inline-flex gap-1 justify-content-end">
+                                                <BotonAccion
+                                                    id={`btn-estado-usuario-${usuario.id}`}
+                                                    etiqueta={
+                                                        usuario.estaActivo
+                                                            ? "Desactivar usuario"
+                                                            : "Activar usuario"
+                                                    }
+                                                    onClick={() => handleCambiarEstado(usuario)}
+                                                    disabled={esMiCuenta || procesando}
+                                                    motivoDeshabilitado={
+                                                        esMiCuenta
+                                                            ? "Tu cuenta"
+                                                            : procesando
+                                                            ? "Procesando..."
+                                                            : undefined
+                                                    }
+                                                    colorIcono={
+                                                        usuario.estaActivo
+                                                            ? "text-danger"
+                                                            : "text-success"
+                                                    }
+                                                >
+                                                    {procesando ? (
+                                                        <span
+                                                            className="spinner-border spinner-border-sm"
+                                                            aria-hidden="true"
+                                                        />
+                                                    ) : usuario.estaActivo ? (
+                                                        <IconoBaja />
+                                                    ) : (
+                                                        <IconoAlta />
+                                                    )}
+                                                </BotonAccion>
+                                            </div>
                                         </td>
                                     </tr>
                                 );
@@ -209,6 +225,28 @@ export default function GestionUsuarios() {
                 mostrar={mostrarModal}
                 onCerrar={() => setMostrarModal(false)}
                 onUsuarioCreado={handleUsuarioCreado}
+            />
+
+            {/* Confirmación para activar / desactivar */}
+            <ModalConfirmar
+                mostrar={Boolean(usuarioAConfirmar)}
+                titulo={
+                    usuarioAConfirmar?.estaActivo
+                        ? "Desactivar usuario"
+                        : "Activar usuario"
+                }
+                mensaje={
+                    usuarioAConfirmar
+                        ? usuarioAConfirmar.estaActivo
+                            ? `${nombreCompleto(usuarioAConfirmar)} no podrá iniciar sesión mientras la cuenta esté inactiva.`
+                            : `${nombreCompleto(usuarioAConfirmar)} podrá volver a iniciar sesión.`
+                        : ""
+                }
+                textoConfirmar={usuarioAConfirmar?.estaActivo ? "Desactivar" : "Activar"}
+                variante={usuarioAConfirmar?.estaActivo ? "danger" : "success"}
+                cargando={procesandoId !== null && procesandoId === usuarioAConfirmar?.id}
+                onConfirmar={confirmarCambioEstado}
+                onCerrar={() => setUsuarioAConfirmar(null)}
             />
         </div>
     );

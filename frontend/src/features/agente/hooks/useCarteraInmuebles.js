@@ -25,6 +25,8 @@ export function useCarteraInmuebles(agenteId) {
   const [filtroEstado, setFiltroEstado] = useState("todas");
   const [modalAbierto, setModalAbierto] = useState(false);
   const [propiedadAEditar, setPropiedadAEditar] = useState(null);
+  const [confirmacionEstado, setConfirmacionEstado] = useState(null);
+  const [procesandoEstado, setProcesandoEstado] = useState(false);
   const { mensaje: notificacion, mostrarToast: setNotificacion } = useToast();
 
   useEffect(() => {
@@ -60,19 +62,26 @@ export function useCarteraInmuebles(agenteId) {
     }
   };
 
-  const alternarEstadoPropiedad = async (id, titulo, estadoActual) => {
+  // Abre el diálogo de confirmación; la baja/alta se ejecuta al confirmar
+  const alternarEstadoPropiedad = (id, titulo, estadoActual) => {
+    setConfirmacionEstado({ id, titulo, estadoActual });
+  };
+
+  const cancelarAlternarEstado = () => {
+    if (procesandoEstado) return;
+    setConfirmacionEstado(null);
+  };
+
+  const confirmarAlternarEstado = async () => {
+    if (!confirmacionEstado) return;
+
+    const { id, titulo, estadoActual } = confirmacionEstado;
     const esActivo = estadoActual === "activo";
     const accionTexto = esActivo ? "dar de baja" : "dar de alta";
 
-    if (
-      !window.confirm(
-        `¿Seguro que querés ${accionTexto} el inmueble "${titulo}"?`,
-      )
-    ) {
-      return;
-    }
-
     try {
+      setProcesandoEstado(true);
+
       if (esActivo) {
         await eliminarPropiedadAgente(id); 
       } else {
@@ -95,6 +104,9 @@ export function useCarteraInmuebles(agenteId) {
     } catch (err) {
       console.error(err);
       setNotificacion(`Error al ${accionTexto} el inmueble`);
+    } finally {
+      setProcesandoEstado(false);
+      setConfirmacionEstado(null);
     }
   };
 
@@ -122,8 +134,12 @@ export function useCarteraInmuebles(agenteId) {
     modalAbierto,
     propiedadAEditar,
     idsConOperacion,
+    confirmacionEstado,
+    procesandoEstado,
     guardarPropiedad,
     alternarEstadoPropiedad,
+    confirmarAlternarEstado,
+    cancelarAlternarEstado,
     abrirCrear,
     abrirEditar,
     cerrarModal,

@@ -3,6 +3,7 @@ import {
   obtenerPropietarios,
   eliminarImagenPropiedad,
 } from "../services/agenteService";
+import { useToast } from "../../../shared/hooks/useToast";
 
 export const FORM_INMUEBLE_INICIAL = {
   titulo: "",
@@ -34,6 +35,9 @@ export function useModalFormularioInmueble({
   const [propietarios, setPropietarios] = useState([]);
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [imagenAConfirmar, setImagenAConfirmar] = useState(null);
+  const [eliminandoImagen, setEliminandoImagen] = useState(false);
+  const { mensaje: notificacion, mostrarToast } = useToast();
 
   const esEdicion = Boolean(propiedadEditar);
 
@@ -144,7 +148,7 @@ export function useModalFormularioInmueble({
     }
 
     if (files.length < rawFiles.length) {
-      alert(
+      mostrarToast(
         "Se omitieron algunos archivos porque no tienen un formato de imagen válido.",
       );
     }
@@ -174,23 +178,41 @@ export function useModalFormularioInmueble({
     e.target.value = "";
   };
 
-  const handleRemoveImage = async (item, esExistente) => {
+  const handleRemoveImage = (item, esExistente) => {
     if (esExistente) {
-      if (!window.confirm("¿Eliminar esta imagen de forma permanente?")) return;
-      try {
-        await eliminarImagenPropiedad(item.id);
-        setImagenesExistentes((prev) =>
-          prev.filter((img) => img.id !== item.id),
-        );
-      } catch (err) {
-        alert(err.message || "No se pudo eliminar la imagen");
-      }
-    } else {
-      if (item.url) {
-        URL.revokeObjectURL(item.url);
-      }
-      setArchivosImagenes((prev) => prev.filter((f) => f !== item.file));
-      setPreviewsLocales((prev) => prev.filter((p) => p.url !== item.url));
+      // La baja en la base se confirma desde un modal
+      setImagenAConfirmar(item);
+      return;
+    }
+
+    if (item.url) {
+      URL.revokeObjectURL(item.url);
+    }
+    setArchivosImagenes((prev) => prev.filter((f) => f !== item.file));
+    setPreviewsLocales((prev) => prev.filter((p) => p.url !== item.url));
+  };
+
+  const cancelarEliminarImagen = () => {
+    if (eliminandoImagen) return;
+    setImagenAConfirmar(null);
+  };
+
+  const confirmarEliminarImagen = async () => {
+    if (!imagenAConfirmar) return;
+
+    const imagen = imagenAConfirmar;
+
+    try {
+      setEliminandoImagen(true);
+      await eliminarImagenPropiedad(imagen.id);
+      setImagenesExistentes((prev) =>
+        prev.filter((img) => img.id !== imagen.id),
+      );
+    } catch (err) {
+      mostrarToast(err.message || "No se pudo eliminar la imagen");
+    } finally {
+      setEliminandoImagen(false);
+      setImagenAConfirmar(null);
     }
   };
 
@@ -284,5 +306,10 @@ export function useModalFormularioInmueble({
     imagenesExistentes,
     previewsLocales,
     handleRemoveImage,
+    notificacion,
+    imagenAConfirmar,
+    eliminandoImagen,
+    confirmarEliminarImagen,
+    cancelarEliminarImagen,
   };
 }
