@@ -130,13 +130,19 @@ export async function obtenerInmueblesAsignadosPorUsuario(usuario) {
         titulo: op.propiedad_titulo,
         direccion: op.propiedad_direccion,
         zona: op.propiedad_zona,
+        categoria: op.propiedad_categoria,
         tipo: op.tipo_operacion, // 'venta' o 'alquiler'
         precio: Number(op.monto_cierre),
         moneda: op.moneda,
         img: op.propiedad_img || '/img/propiedades/prop1.jpg',
         imagenes: [op.propiedad_img || '/img/propiedades/prop1.jpg'],
+        fechaOperacion: op.fecha_operacion,
+        fechaInicioContrato: op.fecha_inicio_contrato,
+        fechaFinContrato: op.fecha_fin_contrato,
         agenteNombre: `${op.agente_nombre || ''} ${op.agente_apellido || ''}`.trim() || 'Sin asesor asignado',
         clienteNombre: `${op.cliente_nombre || ''} ${op.cliente_apellido || ''}`.trim(),
+        clienteEmail: op.cliente_email || '',
+        clienteTelefono: op.cliente_telefono || '',
       }));
     } catch (err) {
       return [];

@@ -1,5 +1,5 @@
-import React from "react";
 import SeccionPropiedades from "../../../shared/components/propiedades/SeccionPropiedades";
+import CardInmuebleAsignado from "./CardInmuebleAsignado";
 import { useInmueblesAsignados } from "../hooks/useInmueblesAsignados";
 
 export default function InmueblesAsignados() {
@@ -14,10 +14,10 @@ export default function InmueblesAsignados() {
           : "Gestioná los inmuebles asignados a tu cuenta"
       }
       propiedades={propiedades}
-      esAsignado={true}
       cargando={cargando}
       error={error}
       textoCargando="Cargando tus inmuebles asignados..."
+      renderCard={(inmueble) => <CardInmuebleAsignado inmueble={inmueble} />}
       vacio={{
         titulo: "No tenés inmuebles asignados",
         texto: "Aún no poseés contratos activos registrados a tu nombre.",

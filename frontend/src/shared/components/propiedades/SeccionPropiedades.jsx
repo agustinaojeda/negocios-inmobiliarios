@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router";
 import GrillaPropiedades from "./GrillaPropiedades";
 import MensajeVacio from "../MensajeVacio";
@@ -13,6 +12,7 @@ export default function SeccionPropiedades({
   cargando = false,
   error = null,
   renderAccion = null,
+  renderCard = null,
   textoCargando = "Cargando...",
   vacio = {
     titulo: "No hay propiedades",
@@ -53,6 +53,7 @@ export default function SeccionPropiedades({
           citas={citas}
           esAsignado={esAsignado} 
           renderAccion={renderAccion}
+          renderCard={renderCard}
         />
       ) : (
         <MensajeVacio titulo={vacio.titulo} texto={vacio.texto}>
