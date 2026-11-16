@@ -10,12 +10,13 @@ export const pool = new Pool({
   user: env.PGUSER,
   password: env.PGPASSWORD,
   database: env.PGDATABASE,
+  ssl: env.PGHOST !== 'localhost' ? { rejectUnauthorized: false } : false,
 
   max: 20, // cantidad máxima de clientes (conexiones) simultáneas en el pool
   min: 0, // cantidad mínima de clientes que se mantienen abiertos en el pool
 
   idleTimeoutMillis: 30000, // ms que una conexión inactiva puede quedar abierta antes de cerrarse
-  connectionTimeoutMillis: 5000, // ms de espera para establecer una conexión antes de fallar
+  connectionTimeoutMillis: 15000, // ms de espera para establecer una conexión antes de fallar
   query_timeout: 10000, // ms máximo de espera por la respuesta de una query (lado cliente)
   statement_timeout: 10000, // ms máximo que el servidor Postgres deja correr una sentencia SQL
 
