@@ -3,14 +3,22 @@ import { env } from './env.js';
 
 const { Pool } = pkg;
 
-// Pool de conexiones
+const isLocal = env.DATABASE_URL
+  ? env.DATABASE_URL.includes('localhost') || env.DATABASE_URL.includes('127.0.0.1')
+  : env.PGHOST === 'localhost' || env.PGHOST === '127.0.0.1';
+
+// Pool de conexiones (soporta DATABASE_URL de la Guía 2 o variables PG* separadas)
 export const pool = new Pool({
-  host: env.PGHOST,
-  port: env.PGPORT,
-  user: env.PGUSER,
-  password: env.PGPASSWORD,
-  database: env.PGDATABASE,
-  ssl: env.PGHOST !== 'localhost' ? { rejectUnauthorized: false } : false,
+  ...(env.DATABASE_URL
+    ? { connectionString: env.DATABASE_URL }
+    : {
+        host: env.PGHOST,
+        port: env.PGPORT,
+        user: env.PGUSER,
+        password: env.PGPASSWORD,
+        database: env.PGDATABASE,
+      }),
+  ssl: !isLocal ? { rejectUnauthorized: false } : false,
 
   max: 20, // cantidad máxima de clientes (conexiones) simultáneas en el pool
   min: 0, // cantidad mínima de clientes que se mantienen abiertos en el pool

@@ -9,6 +9,9 @@
     "dev": "node --watch src/server.js",
     "db:migrate": "node -e \"import('./src/config/initDb.js').then(m => m.runMigrations().then(() => process.exit()))\""
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",

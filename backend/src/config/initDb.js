@@ -43,7 +43,7 @@ const ensureDatabaseExists = async () => {
 //funcion para la migracion
 export const runMigrations = async () => {
   try {
-    if (env.PGHOST === 'localhost') {
+    if (!env.DATABASE_URL && env.PGHOST === 'localhost') {
       await ensureDatabaseExists();
     }
 

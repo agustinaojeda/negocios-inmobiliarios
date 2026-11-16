@@ -7,7 +7,8 @@ try {
 
 export const env = {
   PORT: process.env.PORT ?? 3000,
-  CORS_ORIGIN: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+  CORS_ORIGIN: process.env.FRONTEND_URL ?? process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+  DATABASE_URL: process.env.DATABASE_URL,
   PGHOST: process.env.PGHOST ?? 'localhost',
   PGPORT: process.env.PGPORT ?? 5432,
   PGUSER: process.env.PGUSER ?? 'postgres',
