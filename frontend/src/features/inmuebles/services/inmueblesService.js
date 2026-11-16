@@ -41,20 +41,38 @@ export async function obtenerPropiedadesDisponibles(filtros = {}) {
 
 export async function obtenerPropiedadPorId(id) {
   const sesion = obtenerSesion();
+  const rol = sesion?.rol;
 
   //si es agente o admin se le muestra este activa o no
-  if (sesion && (sesion.rol == "agente" || sesion.rol == 'admin')) {
+  if (rol == "agente" || rol == "admin") {
     try {
       return await apiClient.get(`/inmuebles/panel/${id}`);
     } catch (error) {
-      throw new Error("No tenés permisos para ver esta propiedad");
+      throw new Error("No tenés permisos para ver esta propiedad", {
+        cause: error,
+      });
     }
-  } else {
-    try {
-      return await apiClient.get(`/inmuebles/${id}`);
-    } catch (error) {
-      throw new Error("La propiedad que buscás no existe");
+  }
+
+  try {
+    return await apiClient.get(`/inmuebles/${id}`);
+  } catch (error) {
+    if (rol === "propietario" && error?.status === 404) {
+      try {
+        return await apiClient.get(`/inmuebles/panel/${id}`);
+      } catch (errorPanel) {
+        if (errorPanel?.status === 403) {
+          throw new Error("No tenés permisos para ver esta propiedad", {
+            cause: errorPanel,
+          });
+        }
+        throw new Error("La propiedad que buscás no existe", {
+          cause: errorPanel,
+        });
+      }
     }
+
+    throw new Error("La propiedad que buscás no existe", { cause: error });
   }
 }
 
@@ -67,6 +85,35 @@ export async function obtenerUltimas(limite = 3) {
 //en este caso se usa como puente ya que obtenerPropiedades la usan varios archivos entonces para no romper nada
 export async function obtenerPropiedades() {
   return obtenerPropiedadesDisponibles();
+}
+
+// Historial de cambios de precio (solo agente asignado y propietario dueño)
+export async function obtenerHistorialPrecios(id) {
+  const datos = await apiClient.get(`/inmuebles/${id}/historial-precios`);
+
+  return {
+    ...datos,
+    precio_actual: Number(datos.precio_actual),
+    historial: (datos.historial || []).map((item) => ({
+      ...item,
+      precio_anterior: Number(item.precio_anterior),
+      precio_nuevo: Number(item.precio_nuevo),
+    })),
+  };
+}
+
+// Traduce el error del endpoint a un texto que se pueda mostrar en el modal
+export function mensajeErrorHistorial(error) {
+  if (error?.status === 403) {
+    return "No tenés permisos para ver el historial de este inmueble";
+  }
+  if (error?.status === 404) {
+    return "El inmueble no existe o fue eliminado";
+  }
+  if (error?.status === 0) {
+    return "No se pudo conectar con el servidor. Probá de nuevo.";
+  }
+  return error?.message || "No se pudo cargar el historial de precios";
 }
 
 export async function obtenerInmueblesAsignadosPorUsuario(usuario) {

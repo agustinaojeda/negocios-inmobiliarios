@@ -59,7 +59,18 @@ export const obtenerPanel = async (req, res, next) => {
       return res.status(404).json({ error: "Propiedad no encontrada" });
     }
 
-    if ((req.usuario.rol === 'agente' && propiedad.agente_id !== req.usuario.id) || (req.usuario.rol !== 'admin' && req.usuario.rol !== 'agente')) {
+    const { rol, id: usuarioId } = req.usuario;
+
+    const esAdmin = rol === "admin";
+    const esAgenteAsignado =
+      rol === "agente" && Number(propiedad.agente_id) === Number(usuarioId);
+    const esPropietarioDueno =
+      rol === "propietario" &&
+      Number(propiedad.propietario_id) === Number(usuarioId);
+
+    // El propietario solo puede ver el detalle de sus propios inmuebles
+    // (activos o inactivos). El resto de los roles mantiene el acceso de siempre.
+    if (!esAdmin && !esAgenteAsignado && !esPropietarioDueno) {
       return res
         .status(403)
         .json({ error: "No tenés permisos para ver esta propiedad" });

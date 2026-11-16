@@ -1,5 +1,6 @@
-import { obtenerSesion, obtenerTodosLosUsuarios } from '../../auth/services/authService'
+import { obtenerSesion } from '../../auth/services/authService'
 import { obtenerPropiedadesDisponibles } from '../../inmuebles/services/inmueblesService'
+import { listarOperaciones } from '../../../shared/services/operacionesService'
 import { apiClient } from '../../../shared/services/apiClient'
 
 // Obtiene las citas del propietario desde la API
@@ -45,45 +46,42 @@ export async function obtenerMisPropiedadesDetalladas() {
   })
 }
 
-// Detalle de las citas recibidas en las propiedades del dueño
 export async function obtenerMisCitasDetalladas(propietarioId = null) {
   const idBuscado = propietarioId || obtenerSesion()?.id
   if (!idBuscado) return []
 
-  const [citas, propiedades, usuarios] = await Promise.all([
-    obtenerCitas(),
-    obtenerPropiedadesDisponibles(),
-    obtenerTodosLosUsuarios(),
-  ])
+  const citas = await obtenerCitas()
 
   // Citas sobre los inmuebles de este propietario
   const misCitas = citas.filter(
-    (c) => !c.propietario_id || Number(c.propietario_id || c.propietarioId) === Number(idBuscado)
+    (c) => !c.propietario_id || Number(c.propietario_id) === Number(idBuscado)
   )
 
-  return misCitas.map((cita) => {
-    const propiedadId = cita.propiedad_id || cita.propiedadId
-    const clienteId = cita.inquilino_id || cita.clienteId
-    const agenteId = cita.agente_id || cita.agenteId
-
-    const propiedad = propiedades.find((p) => p.id === propiedadId)
-    const cliente = usuarios.find((u) => u.id === clienteId)
-    const agente = usuarios.find((u) => u.id === agenteId)
-
-    return {
-      ...cita,
-      propiedad,
-      clienteNombre:
-        cita.cliente_nombre ||
-        (cliente ? `${cliente.nombre} ${cliente.apellido || ''}`.trim() : 'Cliente interesado'),
-      clienteTelefono: cita.cliente_telefono || cliente?.telefono || '',
-      clienteEmail: cita.cliente_email || cliente?.email || '',
-      agenteNombre:
-        cita.agente_nombre ||
-        (agente ? `${agente.nombre} ${agente.apellido || ''}`.trim() : 'Sin asesor asignado'),
-      agenteTelefono: cita.agente_telefono || agente?.telefono || '',
-    }
-  })
+  return misCitas.map((cita) => ({
+    ...cita,
+    fecha: cita.fecha ? String(cita.fecha).split('T')[0] : '',
+    hora: cita.hora ? String(cita.hora).slice(0, 5) : '',
+    propiedad: {
+      id: cita.propiedad_id,
+      titulo: cita.propiedad_titulo || 'Inmueble no especificado',
+      direccion: cita.propiedad_direccion || '',
+      zona: cita.propiedad_zona || '',
+      categoria: cita.propiedad_categoria || '',
+      precio:
+        cita.propiedad_precio !== null ? Number(cita.propiedad_precio) : null,
+      moneda: cita.propiedad_moneda || '',
+      img: cita.propiedad_img || '/img/propiedades/prop1.jpg',
+    },
+    clienteNombre:
+      `${cita.cliente_nombre || ''} ${cita.cliente_apellido || ''}`.trim() ||
+      'Cliente interesado',
+    clienteTelefono: cita.cliente_telefono || '',
+    clienteEmail: cita.cliente_email || '',
+    agenteNombre:
+      `${cita.agente_nombre || ''} ${cita.agente_apellido || ''}`.trim() ||
+      'Sin asesor asignado',
+    agenteTelefono: cita.agente_telefono || '',
+  }))
 }
 
 // Cálculo de Métricas y KPIs para el Propietario
@@ -91,9 +89,10 @@ export async function obtenerMetricasPropietario(propietarioId = null, diasLimit
   const idBuscado = propietarioId || obtenerSesion()?.id
   if (!idBuscado) return null
 
-  const [propiedades, citas] = await Promise.all([
-    obtenerPropiedadesDisponibles(),
+  const [propiedades, citas, operaciones] = await Promise.all([
+    apiClient.get('/inmuebles/panel'),
     obtenerCitas(),
+    listarOperaciones(),
   ])
 
   // Filtramos por propietario_id de la base de datos
@@ -132,9 +131,7 @@ export async function obtenerMetricasPropietario(propietarioId = null, diasLimit
     (p) => p.estado_visibilidad === 'activo' || p.estado === 'disponible'
   ).length
 
-  const concretadasCount = misPropiedades.filter(
-    (p) => p.estado_visibilidad === 'inactivo' || ['alquilado', 'vendido', 'reservado'].includes(p.estado)
-  ).length
+  const concretadasCount = (operaciones || []).length
 
   return {
     totales: misPropiedades.length,

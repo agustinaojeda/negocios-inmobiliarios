@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useFetch } from "../../../shared/hooks/useFetch";
+import { listarOperaciones } from "../../../shared/services/operacionesService";
 import {
   obtenerPropiedadesAgente,
   guardarPropiedadAgente,
@@ -14,6 +15,11 @@ export function useCarteraInmuebles(agenteId) {
     cargando,
     error,
   } = useFetch(obtenerPropiedadesAgente);
+
+  const { datos: operaciones } = useFetch(listarOperaciones);
+  const idsConOperacion = new Set(
+    (operaciones || []).map((operacion) => Number(operacion.propiedad_id)),
+  );
 
   const [propiedades, setPropiedades] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState("todas");
@@ -115,6 +121,7 @@ export function useCarteraInmuebles(agenteId) {
     notificacion,
     modalAbierto,
     propiedadAEditar,
+    idsConOperacion,
     guardarPropiedad,
     alternarEstadoPropiedad,
     abrirCrear,

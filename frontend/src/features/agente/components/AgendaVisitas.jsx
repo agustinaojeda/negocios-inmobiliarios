@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
 import Toast from '../../../shared/components/Toast'
+import { IconoCalendario } from '../../../shared/components/Iconos'
+import ModalDetalleCita from '../../../shared/components/citas/ModalDetalleCita'
+import { resolverUrlImagen } from '../../../shared/config/api'
 import { useAgendaVisitas } from '../hooks/useAgendaVisitas'
 import { FiltroPills } from '../../inmuebles'
 import './filtro-compacto.css'
@@ -15,6 +19,7 @@ const BADGES_ESTADO = {
 }
 
 export default function AgendaVisitas({ agenteId }) {
+  const [citaDetalleId, setCitaDetalleId] = useState(null)
   const {
     citasFiltradas,
     cargando,
@@ -71,7 +76,7 @@ export default function AgendaVisitas({ agenteId }) {
                 {/* Info Inmueble y Cliente */}
                 <div className="d-flex align-items-center gap-3">
                   <img
-                    src={c.propiedadImg || '/img/propiedades/prop1.jpg'}
+                    src={resolverUrlImagen(c.propiedadImg) || '/img/propiedades/prop1.jpg'}
                     alt={c.propiedadTitulo}
                     className="rounded-3 object-fit-cover border shadow-sm"
                     style={{ width: '55px', height: '55px' }}
@@ -86,8 +91,9 @@ export default function AgendaVisitas({ agenteId }) {
                         {c.estado}
                       </span>
                     </div>
-                    <div className="small text-muted mb-1">
-                      📅 <strong>{c.fecha || 'A coordinar'}</strong> a las <strong>{c.hora || '10:00'} hs</strong>
+                    <div className="small text-muted mb-1 d-flex align-items-center gap-1 flex-wrap">
+                      <IconoCalendario size={13} />
+                      <strong>{c.fecha || 'A coordinar'}</strong> a las <strong>{c.hora || '10:00'} hs</strong>
                     </div>
                     <div className="small text-secondary">
                       Interesado: <strong>{c.clienteNombre}</strong>
@@ -99,6 +105,13 @@ export default function AgendaVisitas({ agenteId }) {
 
                 {/* Acciones */}
                 <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <button
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-medium"
+                    onClick={() => setCitaDetalleId(c.id)}
+                  >
+                    Ver detalle
+                  </button>
+
                   {c.estado === 'pendiente' && (
                     <>
                       <button
@@ -156,6 +169,12 @@ export default function AgendaVisitas({ agenteId }) {
           }
         />
       )}
+
+      <ModalDetalleCita
+        mostrar={citaDetalleId !== null}
+        citaId={citaDetalleId}
+        onCerrar={() => setCitaDetalleId(null)}
+      />
     </div>
   )
 }

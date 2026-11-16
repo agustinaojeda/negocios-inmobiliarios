@@ -1,10 +1,16 @@
+import { useState } from 'react'
 import Spinner from '../../../shared/components/Spinner'
 import MensajeVacio from '../../../shared/components/MensajeVacio'
 import Toast from '../../../shared/components/Toast'
 import TablaGestionInmuebles from '../../../shared/components/propiedades/TablaGestionInmuebles'
 import ModalFormularioInmuebles from './ModalFormularioInmuebles'
+import ModalHistorialPrecios from '../../inmuebles/components/ModalHistorialPrecios'
 import { useCarteraInmuebles } from '../hooks/useCarteraInmuebles'
 import { FiltroPills } from '../../inmuebles'
+import {
+  obtenerHistorialPrecios,
+  mensajeErrorHistorial,
+} from '../../inmuebles/services/inmueblesService'
 import './filtro-compacto.css'
 
 const ESTADOS_FILTRO = ['todas', 'activo', 'inactivo']
@@ -19,6 +25,7 @@ export default function CarteraInmuebles({ agenteId }) {
     notificacion,
     modalAbierto,
     propiedadAEditar,
+    idsConOperacion,
     cambiarEstado,
     guardarPropiedad,
     alternarEstadoPropiedad,
@@ -26,6 +33,34 @@ export default function CarteraInmuebles({ agenteId }) {
     abrirEditar,
     cerrarModal,
   } = useCarteraInmuebles(agenteId)
+
+  const [propiedadHistorial, setPropiedadHistorial] = useState(null)
+  const [datosHistorial, setDatosHistorial] = useState(null)
+  const [cargandoHistorial, setCargandoHistorial] = useState(false)
+  const [errorHistorial, setErrorHistorial] = useState(null)
+
+  const abrirHistorial = async (propiedad) => {
+    setPropiedadHistorial(propiedad)
+    setDatosHistorial(null)
+    setErrorHistorial(null)
+    setCargandoHistorial(true)
+
+    try {
+      const datos = await obtenerHistorialPrecios(propiedad.id)
+      setDatosHistorial(datos)
+    } catch (err) {
+      setErrorHistorial(mensajeErrorHistorial(err))
+    } finally {
+      setCargandoHistorial(false)
+    }
+  }
+
+  const cerrarHistorial = () => {
+    setPropiedadHistorial(null)
+    setDatosHistorial(null)
+    setErrorHistorial(null)
+    setCargandoHistorial(false)
+  }
 
   if (cargando) return <Spinner texto="Cargando cartera..." />
   if (error) {
@@ -77,6 +112,8 @@ export default function CarteraInmuebles({ agenteId }) {
           editableEstado={true}
           onEditar={abrirEditar}
           onAlternarEstado={alternarEstadoPropiedad}
+          onVerHistorial={abrirHistorial}
+          idsConOperacion={idsConOperacion}
           textoBotonEliminar="Baja"
         />
       ) : (
@@ -92,6 +129,18 @@ export default function CarteraInmuebles({ agenteId }) {
         onCerrar={cerrarModal}
         onGuardar={guardarPropiedad}
         propiedadEditar={propiedadAEditar}
+      />
+
+      {/* Modal historial de precios */}
+      <ModalHistorialPrecios
+        mostrar={Boolean(propiedadHistorial)}
+        onCerrar={cerrarHistorial}
+        propiedad={propiedadHistorial}
+        historial={datosHistorial?.historial}
+        precioActual={datosHistorial?.precio_actual}
+        cargando={cargandoHistorial}
+        error={errorHistorial}
+        onReintentar={() => abrirHistorial(propiedadHistorial)}
       />
     </div>
   )

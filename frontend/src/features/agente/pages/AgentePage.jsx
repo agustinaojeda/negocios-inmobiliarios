@@ -1,6 +1,7 @@
 import { useOutletContext } from 'react-router'
 import CarteraInmuebles from '../components/CarteraInmuebles'
 import AgendaVisitas from '../components/AgendaVisitas'
+import OperacionesAgente from '../components/OperacionesAgente'
 import InformacionContacto from '../../../shared/components/panel/InfoContacto'
 import Seguridad from '../../../shared/components/panel/Seguridad'
 import Spinner from '../../../shared/components/Spinner'
@@ -146,6 +147,10 @@ export default function AgentePage() {
 
       {seccionActiva === 'cartera' && (
         <CarteraInmuebles agenteId={sesion?.id} />
+      )}
+
+      {seccionActiva === 'operaciones' && (
+        <OperacionesAgente />
       )}
 
       {seccionActiva === 'citas' && (

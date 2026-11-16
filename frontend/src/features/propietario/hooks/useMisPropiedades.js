@@ -9,6 +9,7 @@ export function useMisPropiedades(propietarioId = null) {
   const [citas, setCitas] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
+  const [errorCitas, setErrorCitas] = useState(null)
 
   const [filtroEstadoProp, setFiltroEstadoProp] = useState('todas')
   const [filtroEstadoCita, setFiltroEstadoCita] = useState('todas')
@@ -20,15 +21,31 @@ export function useMisPropiedades(propietarioId = null) {
       try {
         setCargando(true)
         setError(null)
+        setErrorCitas(null)
 
-        const [propsData, citasData = []] = await Promise.all([//cambiar una vez que este lo de citas 
+        const [propsResultado, citasResultado] = await Promise.allSettled([
           obtenerMisPropiedadesDetalladas(propietarioId),
-          //obtenerMisCitasDetalladas(propietarioId)
+          obtenerMisCitasDetalladas(propietarioId),
         ])
 
-        if (activo) {
-          setPropiedades(propsData)
-          setCitas(citasData)
+        if (!activo) return
+
+        if (propsResultado.status === 'fulfilled') {
+          setPropiedades(propsResultado.value)
+        } else {
+          setError(
+            propsResultado.reason?.message ||
+              'Error al obtener las propiedades del propietario'
+          )
+        }
+
+        if (citasResultado.status === 'fulfilled') {
+          setCitas(citasResultado.value)
+        } else {
+          setErrorCitas(
+            citasResultado.reason?.message ||
+              'Error al obtener las citas del propietario'
+          )
         }
       } catch (err) {
         if (activo) {
@@ -65,6 +82,7 @@ export function useMisPropiedades(propietarioId = null) {
     citas: citasFiltradas,
     cargando,
     error,
+    errorCitas,
     filtroEstadoProp,
     setFiltroEstadoProp,
     filtroEstadoCita,

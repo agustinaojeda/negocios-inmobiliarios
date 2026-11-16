@@ -12,6 +12,7 @@ export default function SeccionPropiedades({
   esAsignado = false,
   cargando = false,
   error = null,
+  renderAccion = null,
   textoCargando = "Cargando...",
   vacio = {
     titulo: "No hay propiedades",
@@ -51,6 +52,7 @@ export default function SeccionPropiedades({
           propiedades={propiedades}
           citas={citas}
           esAsignado={esAsignado} 
+          renderAccion={renderAccion}
         />
       ) : (
         <MensajeVacio titulo={vacio.titulo} texto={vacio.texto}>

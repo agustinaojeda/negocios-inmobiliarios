@@ -7,11 +7,90 @@ const CLASES_ESTADO = {
   inactivo: "bg-secondary text-white",
 };
 
+const CLASES_BOTON_ACCION =
+  "btn btn-sm btn-light border rounded-circle p-0 d-inline-flex align-items-center justify-content-center";
+
+const ESTILO_BOTON_ACCION = { width: "32px", height: "32px" };
+
+function BotonAccion({
+  etiqueta,
+  onClick,
+  disabled = false,
+  motivoDeshabilitado,
+  colorIcono = "text-secondary",
+  children,
+}) {
+  const titulo = disabled && motivoDeshabilitado ? motivoDeshabilitado : etiqueta;
+
+  const boton = (
+    <button
+      type="button"
+      className={`${CLASES_BOTON_ACCION} ${colorIcono}`}
+      style={ESTILO_BOTON_ACCION}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={titulo}
+      title={disabled ? undefined : etiqueta}
+    >
+      {children}
+    </button>
+  );
+
+  if (!disabled) return boton;
+
+  return (
+    <span className="d-inline-flex" title={titulo}>
+      {boton}
+    </span>
+  );
+}
+
+function IconoHistorial() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <polyline points="3 4 3 9 8 9" />
+      <polyline points="12 7 12 12 15 14" />
+    </svg>
+  );
+}
+
+function IconoEditar() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+    </svg>
+  );
+}
+
+function IconoBaja() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="8 12 12 16 16 12" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+    </svg>
+  );
+}
+
+function IconoAlta() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="8 12 12 8 16 12" />
+      <line x1="12" y1="16" x2="12" y2="8" />
+    </svg>
+  );
+}
+
 export default function TablaGestionInmuebles({
   propiedades = [],
   onEditar,
   onAlternarEstado,
+  onVerHistorial,
   admin = false,
+  idsConOperacion,
 }) {
   if (!propiedades || propiedades.length === 0) return null;
 
@@ -36,6 +115,10 @@ export default function TablaGestionInmuebles({
 
             const estadoActual = p.estado_visibilidad || p.estado || "activo";
             const tipoOperacion = p.estado_comercial || p.tipo || "venta";
+            const operada = Boolean(
+              idsConOperacion && idsConOperacion.has(Number(p.id))
+            );
+            const altaBloqueada = estadoActual !== "activo" && operada;
 
             return (
               <tr key={p.id}>
@@ -102,29 +185,50 @@ export default function TablaGestionInmuebles({
                 </td>
 
                 {/* Acciones */}
-                <td className="text-end">
-                  {onEditar && (
-                    <button
-                      className="btn btn-sm btn-outline-primary rounded-pill px-2 me-1"
-                      onClick={() => onEditar(p)}
-                    >
-                      Editar
-                    </button>
-                  )}
-                  {onAlternarEstado && (
-                    <button
-                      className={`btn btn-sm rounded-pill px-2 ${
-                        estadoActual === "activo"
-                          ? "btn-outline-danger"
-                          : "btn-outline-success"
-                      }`}
-                      onClick={() =>
-                        onAlternarEstado(p.id, p.titulo, estadoActual)
-                      }
-                    >
-                      {estadoActual === "activo" ? "Baja" : "Alta"}
-                    </button>
-                  )}
+                <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                  <div className="d-inline-flex gap-1 justify-content-end">
+                    {onVerHistorial && (
+                      <BotonAccion
+                        etiqueta="Ver historial de precios"
+                        onClick={() => onVerHistorial(p)}
+                        colorIcono="text-secondary"
+                      >
+                        <IconoHistorial />
+                      </BotonAccion>
+                    )}
+                    {onEditar && (
+                      <BotonAccion
+                        etiqueta="Editar inmueble"
+                        onClick={() => onEditar(p)}
+                        colorIcono="text-primary"
+                      >
+                        <IconoEditar />
+                      </BotonAccion>
+                    )}
+                    {onAlternarEstado && (
+                      <BotonAccion
+                        etiqueta={
+                          estadoActual === "activo"
+                            ? "Dar de baja"
+                            : "Dar de alta"
+                        }
+                        onClick={() =>
+                          onAlternarEstado(p.id, p.titulo, estadoActual)
+                        }
+                        disabled={altaBloqueada}
+                        motivoDeshabilitado="El inmueble tiene una operación cerrada registrada"
+                        colorIcono={
+                          altaBloqueada
+                            ? "text-muted"
+                            : estadoActual === "activo"
+                              ? "text-danger"
+                              : "text-success"
+                        }
+                      >
+                        {estadoActual === "activo" ? <IconoBaja /> : <IconoAlta />}
+                      </BotonAccion>
+                    )}
+                  </div>
                 </td>
               </tr>
             );
