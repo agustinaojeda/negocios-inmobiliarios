@@ -1,5 +1,9 @@
-// Carga las variables del archivo .env en process.env
-process.loadEnvFile();
+// Carga las variables del archivo .env en process.env (si existe; en producción las inyecta el hosting)
+try {
+  process.loadEnvFile();
+} catch {
+  // En producción (Render, Railway, etc.) no existe archivo .env físico
+}
 
 export const env = {
   PORT: process.env.PORT ?? 3000,
